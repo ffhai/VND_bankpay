@@ -1,0 +1,3 @@
+# openapi 客户端依赖
+# 安装：python -m pip install -r requirements.txt
+requests>=2.31,<3

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "preserve",
+    "checkJs": false,
+    "allowJs": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "components/*": ["./src/components/*"],
+      "views/*": ["./src/views/*"],
+      "utils/*": ["./src/utils/*"]
+    }
+  },
+  "include": ["src/**/*.js", "src/**/*.vue", "vite.config.mjs", "eslint.config.mjs"],
+  "exclude": ["node_modules", "dist", "public"]
+}

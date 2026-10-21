@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+# pre-commit 钩子：只检查本次提交涉及的文件，跑不过就不允许提交。
+#
+# 说明：package.json 位于 manage/，而 git 仓库根目录在其上一级，
+# 因此这里通过 core.hooksPath 指向本目录（见 scripts/setup-git-hooks.mjs）。
+# 钩子执行时的工作目录是仓库根目录，需要先切到 manage 再跑 lint-staged。
+set -e
+
+cd "$(git rev-parse --show-toplevel)/manage" || exit 1
+
+npx --no-install lint-staged

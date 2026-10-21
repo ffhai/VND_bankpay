@@ -1,0 +1,7 @@
+dist
+node_modules
+package-lock.json
+
+# 第三方静态资源（精简版/压缩产物），格式化会破坏或徒增无意义 diff
+public/tinymce
+public/favicon.ico
