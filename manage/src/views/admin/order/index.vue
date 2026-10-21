@@ -60,8 +60,8 @@
           </el-select>
         </el-form-item>
         <el-form-item class="search-actions">
-          <el-button type="primary" @click="onSearch">查询</el-button>
-          <el-button type="danger" @click="onDelete">删除</el-button>
+          <el-button type="primary" :loading="loading" @click="onSearch">查询</el-button>
+          <el-button :disabled="loading" @click="onReset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -69,14 +69,7 @@
       <el-tag type="primary" size="large">合计金额：{{ sum.amount }}</el-tag>
     </div>
     <div class="data-list">
-      <el-table
-        v-loading="loading"
-        :data="items"
-        style="width: 100%"
-        empty-text="暂无数据"
-        @selection-change="handleSelectionChange"
-      >
-        <el-table-column type="selection" width="60" />
+      <el-table v-loading="loading" :data="items" style="width: 100%" empty-text="暂无数据">
         <!-- <el-table-column prop="id" label="ID" width="80" /> -->
         <el-table-column label="订单编号" min-width="200">
           <template #default="scope">
@@ -132,11 +125,19 @@
             <el-button
               type="danger"
               size="small"
+              :loading="isRowActionPending('confirmed:' + scope.row.order_id)"
               @click="onConfirmed(scope.row)"
-              v-if="scope.row.status != 2"
+              v-if="scope.row.status === 1"
               >确认支付</el-button
             >
-            <el-button type="warning" size="small" @click="onNotify(scope.row)">回调</el-button>
+            <el-button
+              type="warning"
+              size="small"
+              :disabled="scope.row.status !== 2"
+              :loading="isRowActionPending('notify:' + scope.row.order_id)"
+              @click="onNotify(scope.row)"
+              >回调</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -151,137 +152,94 @@
   </div>
 </template>
 <script setup>
+import { useTableList } from "@/composables/useTableList";
 import CrudPagination from "@/components/CrudPagination/index.vue";
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import order from "@/api/admin/order";
 import payType from "@/api/admin/payType";
 import member from "@/api/admin/member";
 
-const loading = ref(false);
-
-const searchForm = ref({
-  keyword: "",
-  time: "",
-  trade_no: "",
-  out_trade_no: "",
-  channel_uid: "",
-  company_id: "",
-  pay_type: "",
-  trade_uid: "",
-  status: "",
-  page: 1,
-  pagesize: 20,
+const {
+  loading,
+  items,
+  total,
+  searchForm,
+  getItems,
+  onSearch,
+  onReset,
+  onCurrentChange,
+  onSizeChange,
+  runRowAction,
+  isRowActionPending,
+  extend,
+} = useTableList({
+  fetchList: (params) => order.getItems(params),
+  initialSearch: {
+    keyword: "",
+    time: "",
+    trade_no: "",
+    out_trade_no: "",
+    channel_uid: "",
+    company_id: "",
+    pay_type: "",
+    trade_uid: "",
+    status: "",
+  },
 });
-const total = ref(0);
-const items = ref([]);
-const multipleSelection = ref([]);
+const sum = computed(() => extend.value ?? { amount: 0 });
+
 const paytypeList = ref([]);
 const channelUserList = ref([]);
 const merchantUserList = ref([]);
-const sum = ref({
-  amount: 0,
-});
 
-const onSearch = () => {
-  searchForm.value.page = 1;
-  getItems();
-};
-const getItems = async () => {
-  loading.value = true;
-  try {
-    const response = await order.getItems(searchForm.value);
-    items.value = response.items;
-    total.value = response.count;
-    sum.value = response.sum;
-  } catch (error) {
-    console.error("获取列表失败:", error);
-  } finally {
-    loading.value = false;
-  }
-};
-const handleSelectionChange = (val) => {
-  multipleSelection.value = val;
-};
-const onCurrentChange = (page) => {
-  searchForm.value.page = page;
-  getItems();
-};
-const onSizeChange = (size) => {
-  searchForm.value.pagesize = size;
-  getItems();
-};
-
-const onConfirmed = (item) => {
-  ElMessageBox.confirm("此操作将确认订单已支付, 是否继续?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const loadingInstance = ElLoading.service({ fullscreen: true });
-      try {
-        await order.confirmed({ order_id: item.order_id });
-        ElMessage.success("操作成功");
-        getItems();
-      } catch (error) {
-        console.log(error);
-      } finally {
-        loadingInstance.close();
-      }
+const onConfirmed = (item) =>
+  runRowAction("confirmed:" + item.order_id, () => {
+    return ElMessageBox.confirm("此操作将确认订单已支付, 是否继续?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     })
-    .catch(() => {
-      // catch error
-    });
-};
-const onNotify = (item) => {
-  ElMessageBox.confirm("此操作将回调商户, 是否继续?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const loadingInstance = ElLoading.service({ fullscreen: true });
-      try {
-        await order.notify({ order_id: item.order_id });
-        ElMessage.success("操作成功");
-        getItems();
-      } catch {
-        // 请求错误由统一请求层提示。
-      } finally {
-        loadingInstance.close();
-      }
+      .then(async () => {
+        const loadingInstance = ElLoading.service({ fullscreen: true });
+        try {
+          const result = await order.confirmed({ order_id: item.order_id });
+          ElMessage.success(
+            result.result === "already_processed" ? "订单已处理，无需重复确认" : "确认成功"
+          );
+          getItems();
+        } catch (error) {
+          console.log(error);
+        } finally {
+          loadingInstance.close();
+        }
+      })
+      .catch(() => {
+        // catch error
+      });
+  });
+const onNotify = (item) =>
+  runRowAction("notify:" + item.order_id, () => {
+    return ElMessageBox.confirm("此操作将回调商户, 是否继续?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     })
-    .catch(() => {
-      // catch error
-    });
-};
-const onDelete = () => {
-  if (multipleSelection.value.length === 0) {
-    ElMessage.warning("请先选择要删除的项");
-    return;
-  }
-  ElMessageBox.confirm("此操作将永久删除选中数据, 是否继续?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const loadingInstance = ElLoading.service({ fullscreen: true });
-      try {
-        const ids = multipleSelection.value.map((item) => item.id);
-        await order.del({ ids: ids });
-        ElMessage.success("删除成功");
-        getItems();
-      } catch {
-        // 请求错误由统一请求层提示。
-      } finally {
-        loadingInstance.close();
-      }
-    })
-    .catch(() => {
-      // catch error
-    });
-};
+      .then(async () => {
+        const loadingInstance = ElLoading.service({ fullscreen: true });
+        try {
+          await order.notify({ order_id: item.order_id });
+          ElMessage.success("操作成功");
+          getItems();
+        } catch {
+          // 请求错误由统一请求层提示。
+        } finally {
+          loadingInstance.close();
+        }
+      })
+      .catch(() => {
+        // catch error
+      });
+  });
 const loadPayTypeList = async () => {
   try {
     const response = await payType.getOptions();
@@ -308,7 +266,6 @@ const getMerchantUserList = async () => {
 };
 
 onMounted(() => {
-  getItems();
   loadPayTypeList();
   getChannelUserList();
   getMerchantUserList();

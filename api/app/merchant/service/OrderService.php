@@ -18,7 +18,7 @@ class OrderService extends Service
                 'pay_type',
                 'status',
             ],
-            'datetime' => ['time@.create_time'],
+            'datetime' => ['time@create_time'],
         ], $get);
 
         $model = new OrderModel();

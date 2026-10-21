@@ -27,8 +27,9 @@
           </el-select>
         </el-form-item>
         <el-form-item class="search-actions">
-          <el-button type="primary" @click="onSearch">查询</el-button>
-          <el-button type="danger" @click="onDelete">删除</el-button>
+          <el-button type="primary" :loading="loading" @click="onSearch">查询</el-button>
+          <el-button :disabled="loading" @click="onReset">重置</el-button>
+          <el-button type="danger" :loading="deleting" @click="onDelete">删除/停用</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -78,7 +79,7 @@
       mode="edit"
       :model="editForm"
       :fields="formFields"
-      :loading="loading"
+      :loading="submitting"
       :gutter="20"
       width="min(600px, 94vw)"
       @submit="onEdit"
@@ -87,15 +88,43 @@
 </template>
 <script setup>
 import FormDialog from "@/components/FormDialog/index.vue";
+import { useTableList } from "@/composables/useTableList";
 import CrudPagination from "@/components/CrudPagination/index.vue";
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import api from "@/api/admin/bankUser";
 
-const loading = ref(false);
+const {
+  loading,
+  items,
+  total,
+  searchForm,
+  getItems,
+  onSearch,
+  onReset,
+  onCurrentChange,
+  onSizeChange,
+  handleSelectionChange,
+  onDelete,
+  deleting,
+} = useTableList({
+  fetchList: (params) => api.getItems(params),
+  initialSearch: {
+    keyword: "",
+    time: "",
+
+    idcard: "",
+    status: "",
+  },
+  deleteApi: (data) => api.del(data),
+  confirmMessage: "已引用资料将停用，其余资料删除，是否继续？",
+  deleteSuccessMessage: "处理完成，已引用资料保留并停用",
+});
+const submitting = ref(false);
+
 const dialogVisible = ref(false);
 const formFields = [
-  { prop: "name", label: "姓名", placeholder: "请输入姓名" },
-  { prop: "idcard", label: "身份证号", placeholder: "请输入身份证号" },
+  { prop: "name", required: true, label: "姓名", placeholder: "请输入姓名" },
+  { prop: "idcard", required: true, label: "身份证号", placeholder: "请输入身份证号" },
   {
     prop: "remark",
     label: "备注",
@@ -105,6 +134,7 @@ const formFields = [
   },
   {
     prop: "status",
+    required: true,
     label: "状态",
     placeholder: "请选择",
     type: "select",
@@ -115,15 +145,6 @@ const formFields = [
   },
 ];
 
-const searchForm = ref({
-  keyword: "",
-  time: "",
-  page: 1,
-  pagesize: 20,
-});
-const total = ref(0);
-const items = ref([]);
-
 const editForm = ref({
   id: "",
   name: "",
@@ -131,40 +152,14 @@ const editForm = ref({
   remark: "",
   status: -1,
 });
-const multipleSelection = ref([]);
-
-const onSearch = () => {
-  searchForm.value.page = 1;
-  getItems();
-};
-const getItems = async () => {
-  loading.value = true;
-  try {
-    const response = await api.getItems(searchForm.value);
-    items.value = response.items;
-    total.value = response.count;
-  } catch (error) {
-    console.error("获取列表失败:", error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-const onCurrentChange = (page) => {
-  searchForm.value.page = page;
-  getItems();
-};
-const onSizeChange = (size) => {
-  searchForm.value.pagesize = size;
-  getItems();
-};
 
 const onItemEdit = (item) => {
   editForm.value = { ...item };
   dialogVisible.value = true;
 };
 const onEdit = async (data) => {
-  loading.value = true;
+  if (submitting.value) return;
+  submitting.value = true;
   try {
     await api.edit(data);
     dialogVisible.value = false;
@@ -173,42 +168,7 @@ const onEdit = async (data) => {
   } catch (error) {
     console.error("获取列表失败:", error);
   } finally {
-    loading.value = false;
+    submitting.value = false;
   }
 };
-const onDelete = () => {
-  if (multipleSelection.value.length === 0) {
-    ElMessage.warning("请先选择要删除的项");
-    return;
-  }
-  ElMessageBox.confirm("此操作将永久删除选中数据, 是否继续?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const loadingInstance = ElLoading.service({ fullscreen: true });
-      try {
-        const ids = multipleSelection.value.map((item) => item.id);
-        await api.del({ ids: ids });
-        ElMessage.success("删除成功");
-        getItems();
-      } catch {
-        // 请求错误由统一请求层提示。
-      } finally {
-        loadingInstance.close();
-      }
-    })
-    .catch(() => {
-      // catch error
-    });
-};
-
-const handleSelectionChange = (val) => {
-  multipleSelection.value = val;
-};
-
-onMounted(() => {
-  getItems();
-});
 </script>

@@ -35,8 +35,9 @@
           </el-select>
         </el-form-item>
         <el-form-item class="search-actions">
-          <el-button type="primary" @click="onSearch">查询</el-button>
-          <el-button type="danger" @click="onDelete">删除</el-button>
+          <el-button type="primary" :loading="loading" @click="onSearch">查询</el-button>
+          <el-button :disabled="loading" @click="onReset">重置</el-button>
+          <el-button type="danger" :loading="deleting" @click="onDelete">删除</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -87,7 +88,11 @@
         </el-table-column>
         <el-table-column label="操作" width="80" fixed="right">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="onItemReset(scope.row)"
+            <el-button
+              type="primary"
+              size="small"
+              :loading="isRowActionPending('reset:' + scope.row.id)"
+              @click="onItemReset(scope.row)"
               >重新匹配</el-button
             >
           </template>
@@ -104,106 +109,60 @@
   </div>
 </template>
 <script setup>
+import { useTableList } from "@/composables/useTableList";
 import CrudPagination from "@/components/CrudPagination/index.vue";
-import { ref, onMounted } from "vue";
 import api from "@/api/admin/deviceNotify";
 
-const loading = ref(false);
+const {
+  loading,
+  items,
+  total,
+  searchForm,
+  getItems,
+  onSearch,
+  onReset,
+  onCurrentChange,
+  onSizeChange,
+  runRowAction,
+  isRowActionPending,
+  handleSelectionChange,
+  onDelete,
+  deleting,
+} = useTableList({
+  fetchList: (params) => api.getItems(params),
+  initialSearch: {
+    order_id: "",
+    username: "",
+    time: "",
+    status: "",
 
-const searchForm = ref({
-  order_id: "",
-  username: "",
-  time: "",
-  status: "",
-  page: 1,
-  pagesize: 20,
+    card_number: "",
+    remark: "",
+  },
+  deleteApi: (data) => api.del(data),
 });
-const total = ref(0);
-const items = ref([]);
 
-const multipleSelection = ref([]);
-
-const onSearch = () => {
-  searchForm.value.page = 1;
-  getItems();
-};
-const getItems = async () => {
-  loading.value = true;
-  try {
-    const response = await api.getItems(searchForm.value);
-    items.value = response.items;
-    total.value = response.count;
-  } catch (error) {
-    console.error("获取列表失败:", error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-const onCurrentChange = (page) => {
-  searchForm.value.page = page;
-  getItems();
-};
-const onSizeChange = (size) => {
-  searchForm.value.pagesize = size;
-  getItems();
-};
-
-const onDelete = () => {
-  if (multipleSelection.value.length === 0) {
-    ElMessage.warning("请先选择要删除的项");
-    return;
-  }
-  ElMessageBox.confirm("此操作将永久删除选中数据, 是否继续?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const loadingInstance = ElLoading.service({ fullscreen: true });
-      try {
-        const ids = multipleSelection.value.map((item) => item.id);
-        await api.del({ ids: ids });
-        ElMessage.success("删除成功");
-        getItems();
-      } catch {
-        // 请求错误由统一请求层提示。
-      } finally {
-        loadingInstance.close();
-      }
+const onItemReset = (item) =>
+  runRowAction("reset:" + item.id, () => {
+    return ElMessageBox.confirm("此操作将重新匹配原文, 是否继续?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     })
-    .catch(() => {
-      // catch error
-    });
-};
-const onItemReset = (item) => {
-  ElMessageBox.confirm("此操作将重新匹配原文, 是否继续?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const loadingInstance = ElLoading.service({ fullscreen: true });
-      try {
-        await api.reset({ id: item.id });
-        ElMessage.success("操作成功");
-        getItems();
-      } catch {
-        // 请求错误由统一请求层提示。
-      } finally {
-        loadingInstance.close();
-      }
-    })
-    .catch(() => {
-      // catch error
-    });
-};
-
-const handleSelectionChange = (val) => {
-  multipleSelection.value = val;
-};
-
-onMounted(() => {
-  getItems();
-});
+      .then(async () => {
+        const loadingInstance = ElLoading.service({ fullscreen: true });
+        try {
+          await api.reset({ id: item.id });
+          ElMessage.success("操作成功");
+          getItems();
+        } catch {
+          // 请求错误由统一请求层提示。
+        } finally {
+          loadingInstance.close();
+        }
+      })
+      .catch(() => {
+        // catch error
+      });
+  });
 </script>

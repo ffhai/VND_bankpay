@@ -46,11 +46,7 @@ class Member extends CrudController
      */
     public function adjust(){
         $userId = intval($this->request->param('user_id'));
-        $changeAmount = $this->request->param('change_amount');
-        if (filter_var($changeAmount, FILTER_VALIDATE_INT) === false) {
-            return AjaxUtils::error('金额必须为整数');
-        }
-        $changeAmount = (int) $changeAmount;
+        $changeAmount = \app\common\utils\AmountUtils::integer($this->request->param('change_amount'), true, false);
         $type = (string) $this->request->param('type', 'adjust');
         $remark = (string) $this->request->param('remark', '');
         $operator = $this->userItem['username'] ?? '';

@@ -30,8 +30,9 @@
           </el-select>
         </el-form-item>
         <el-form-item class="search-actions">
-          <el-button type="primary" @click="onSearch">查询</el-button>
-          <el-button type="danger" @click="onDelete">删除</el-button>
+          <el-button type="primary" :loading="loading" @click="onSearch">查询</el-button>
+          <el-button :disabled="loading" @click="onReset">重置</el-button>
+          <el-button type="danger" :loading="deleting" @click="onDelete">删除/停用</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -129,7 +130,7 @@
       mode="edit"
       :model="editForm"
       :fields="formFields"
-      :loading="loading"
+      :loading="submitting"
       :gutter="20"
       width="min(800px, 94vw)"
       @submit="onEdit"
@@ -138,6 +139,7 @@
 </template>
 <script setup>
 import FormDialog from "@/components/FormDialog/index.vue";
+import { useTableList } from "@/composables/useTableList";
 import CrudPagination from "@/components/CrudPagination/index.vue";
 import { ref, onMounted } from "vue";
 import TestVietqrDialog from "@/components/TestVietqrDialog/index.vue";
@@ -145,17 +147,46 @@ import api from "@/api/admin/bankCards";
 import banks from "@/api/admin/banks";
 import bankUser from "@/api/admin/bankUser";
 
+const {
+  loading,
+  items,
+  total,
+  searchForm,
+  getItems,
+  onSearch,
+  onReset,
+  onCurrentChange,
+  onSizeChange,
+  handleSelectionChange,
+  onDelete,
+  deleting,
+} = useTableList({
+  fetchList: (params) => api.getItems(params),
+  initialSearch: {
+    keyword: "",
+    time: "",
+
+    code: "",
+    idcard: "",
+    status: "",
+  },
+  deleteApi: (data) => api.del(data),
+  confirmMessage: "已引用资料将停用，其余资料删除，是否继续？",
+  deleteSuccessMessage: "处理完成，已引用资料保留并停用",
+});
+const submitting = ref(false);
+
 const vietqrVisible = ref(false);
 const vietqrCard = ref(null);
 const onTestVietqr = (card) => {
   vietqrCard.value = card;
   vietqrVisible.value = true;
 };
-const loading = ref(false);
 const dialogVisible = ref(false);
 const formFields = [
   {
     prop: "bank_code",
+    required: true,
     label: "银行",
     placeholder: "所属银行",
     span: 12,
@@ -163,9 +194,10 @@ const formFields = [
     options: () => bankList.value.map((item) => ({ label: item.short_name, value: item.code })),
     props: { filterable: true },
   },
-  { prop: "bank_number", label: "卡号", placeholder: "请输入卡号", span: 12 },
+  { prop: "bank_number", required: true, label: "卡号", placeholder: "请输入卡号", span: 12 },
   {
     prop: "bank_user_id",
+    required: true,
     label: "户名",
     placeholder: "所属户名",
     span: 12,
@@ -179,7 +211,7 @@ const formFields = [
     placeholder: "请输入款金额限制,0为不限制",
     span: 12,
     type: "number",
-    props: { precision: 0, step: 1, min: 0 },
+    props: { precision: 0, step: 1, min: 0, max: 9999999999999, stepStrictly: true },
   },
   {
     prop: "limit_out_max",
@@ -187,10 +219,16 @@ const formFields = [
     placeholder: "请输出款金额限制,0为不限制",
     span: 12,
     type: "number",
-    props: { precision: 0, step: 1, min: 0 },
+    props: { precision: 0, step: 1, min: 0, max: 9999999999999, stepStrictly: true },
   },
   { prop: "online_account", label: "网银账号", placeholder: "请输入网银账号", span: 12 },
-  { prop: "online_password", label: "网银密码", placeholder: "请输入网银密码", span: 12 },
+  {
+    prop: "online_password",
+    type: "password",
+    label: "网银密码",
+    placeholder: "请输入网银密码",
+    span: 12,
+  },
   { prop: "phone_number", label: "手机号码", placeholder: "请输入手机号码", span: 12 },
   {
     prop: "notify_type",
@@ -210,10 +248,11 @@ const formFields = [
     placeholder: "请输入账户余额",
     span: 12,
     type: "number",
-    props: { precision: 0, step: 1, min: 0 },
+    props: { precision: 0, step: 1, min: 0, max: 9999999999999, stepStrictly: true },
   },
   {
     prop: "status",
+    required: true,
     label: "状态",
     placeholder: "请选择",
     span: 12,
@@ -233,14 +272,6 @@ const formFields = [
   },
 ];
 
-const searchForm = ref({
-  keyword: "",
-  time: "",
-  page: 1,
-  pagesize: 20,
-});
-const total = ref(0);
-const items = ref([]);
 const bankList = ref([]);
 const bankUserList = ref([]);
 
@@ -260,39 +291,14 @@ const editForm = ref({
   remark: "",
   status: -1,
 });
-const multipleSelection = ref([]);
 
-const onSearch = () => {
-  searchForm.value.page = 1;
-  getItems();
-};
-const getItems = async () => {
-  loading.value = true;
-  try {
-    const response = await api.getItems(searchForm.value);
-    items.value = response.items;
-    total.value = response.count;
-  } catch (error) {
-    console.error("获取列表失败:", error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-const onCurrentChange = (page) => {
-  searchForm.value.page = page;
-  getItems();
-};
-const onSizeChange = (size) => {
-  searchForm.value.pagesize = size;
-  getItems();
-};
 const onItemEdit = (item) => {
   editForm.value = { ...item };
   dialogVisible.value = true;
 };
 const onEdit = async (data) => {
-  loading.value = true;
+  if (submitting.value) return;
+  submitting.value = true;
   try {
     await api.edit(data);
     dialogVisible.value = false;
@@ -301,35 +307,8 @@ const onEdit = async (data) => {
   } catch (error) {
     console.error("获取列表失败:", error);
   } finally {
-    loading.value = false;
+    submitting.value = false;
   }
-};
-const onDelete = () => {
-  if (multipleSelection.value.length === 0) {
-    ElMessage.warning("请先选择要删除的项");
-    return;
-  }
-  ElMessageBox.confirm("此操作将永久删除选中数据, 是否继续?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const loadingInstance = ElLoading.service({ fullscreen: true });
-      try {
-        const ids = multipleSelection.value.map((item) => item.id);
-        await api.del({ ids: ids });
-        ElMessage.success("删除成功");
-        getItems();
-      } catch {
-        // 请求错误由统一请求层提示。
-      } finally {
-        loadingInstance.close();
-      }
-    })
-    .catch(() => {
-      // catch error
-    });
 };
 const loadBankUserList = async () => {
   try {
@@ -347,12 +326,8 @@ const loadBankList = async () => {
     console.error("获取银行列表失败:", error);
   }
 };
-const handleSelectionChange = (val) => {
-  multipleSelection.value = val;
-};
 
 onMounted(() => {
-  getItems();
   loadBankUserList();
   loadBankList();
 });

@@ -12,6 +12,7 @@ use app\common\model\AppListModel;
 use app\common\model\BankCardsModel;
 use app\common\model\DeviceNotifyModel;
 use app\common\model\OrderModel;
+use think\facade\Log;
 
 class DeviceNotifyService extends Service
 {
@@ -34,9 +35,7 @@ class DeviceNotifyService extends Service
         return $items->toArray();
     }
     public static function setPending(array $params){
-        if (isset($params['balance']) && filter_var($params['balance'], FILTER_VALIDATE_INT) === false) {
-            throw new RequestException('金额必须为整数');
-        }
+        $params['balance'] = \app\common\utils\AmountUtils::integer($params['balance'] ?? 0);
         $model = new DeviceNotifyModel();
         $orderModel = new OrderModel();
 
@@ -82,7 +81,16 @@ class DeviceNotifyService extends Service
                     $data['status'] = DeviceNotifyModel::STATUS_SUCC;
                     $data['order_id'] = $orderItem['order_id'];
 
-                    OrderService::confirmed(['order_id'=>$orderItem['order_id']],[]);
+                    try {
+                        $confirmation = OrderService::confirmed(['order_id'=>$orderItem['order_id']],[]);
+                    } catch (RequestException $e) {
+                        if (empty($e->data['manual_review'])) {
+                            throw $e;
+                        }
+                        $data['status'] = DeviceNotifyModel::STATUS_FIAL;
+                        $confirmation = $e->data;
+                        Log::warning('设备通知确认异常：' . json_encode($confirmation));
+                    }
                 }else{
                     //未匹配到订单
                     $data['status'] = DeviceNotifyModel::STATUS_FIAL;
@@ -112,6 +120,9 @@ class DeviceNotifyService extends Service
         }
 
         $model->where('id','=',$data['id'])->update($data);
+        if (isset($confirmation)) {
+            $data['confirmation'] = $confirmation;
+        }
         return $data;
     }
 }

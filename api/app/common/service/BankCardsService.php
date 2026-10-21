@@ -14,7 +14,7 @@ class BankCardsService extends Service
     public static function testVietqr(array $params, array $userItem, bool $ownOnly = false): array
     {
         $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
-        $amount = filter_var($params['amount'] ?? null, FILTER_VALIDATE_INT);
+        $amount = \app\common\utils\AmountUtils::integer($params['amount'] ?? null, false, false);
         $remark = trim((string) ($params['remark'] ?? ''));
         if (!$id || $id < 1) {
             throw new RequestException('请选择银行卡');

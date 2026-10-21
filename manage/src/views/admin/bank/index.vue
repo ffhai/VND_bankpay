@@ -24,9 +24,10 @@
           </el-select>
         </el-form-item>
         <el-form-item class="search-actions">
-          <el-button type="primary" @click="onSearch">查询</el-button>
+          <el-button type="primary" :loading="loading" @click="onSearch">查询</el-button>
+          <el-button :disabled="loading" @click="onReset">重置</el-button>
           <el-button @click="onItemAdd">新增</el-button>
-          <el-button type="danger" @click="onDelete">删除</el-button>
+          <el-button type="danger" :loading="deleting" @click="onDelete">删除/停用</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -85,7 +86,7 @@
       :mode="dialogMode"
       :model="dialogMode === 'add' ? addForm : editForm"
       :fields="formFields"
-      :loading="loading"
+      :loading="submitting"
       :gutter="20"
       width="min(800px, 94vw)"
       @submit="dialogMode === 'add' ? onAdd($event) : onEdit($event)"
@@ -94,22 +95,50 @@
 </template>
 <script setup>
 import FormDialog from "@/components/FormDialog/index.vue";
+import { useTableList } from "@/composables/useTableList";
 import CrudPagination from "@/components/CrudPagination/index.vue";
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import api from "@/api/admin/banks";
 
-const loading = ref(false);
+const {
+  loading,
+  items,
+  total,
+  searchForm,
+  getItems,
+  onSearch,
+  onReset,
+  onCurrentChange,
+  onSizeChange,
+  handleSelectionChange,
+  onDelete,
+  deleting,
+} = useTableList({
+  fetchList: (params) => api.getItems(params),
+  initialSearch: {
+    keyword: "",
+    time: "",
+
+    status: "",
+  },
+  deleteApi: (data) => api.del(data),
+  confirmMessage: "已引用资料将停用，其余资料删除，是否继续？",
+  deleteSuccessMessage: "处理完成，已引用资料保留并停用",
+});
+const submitting = ref(false);
+
 const dialogVisible = ref(false);
 const dialogMode = ref("add");
 const formFields = [
-  { prop: "name", label: "名称", placeholder: "请输入名称", span: 12 },
-  { prop: "code", label: "短代码", placeholder: "请输入短代码", span: 12 },
+  { prop: "name", required: true, label: "名称", placeholder: "请输入名称", span: 12 },
+  { prop: "code", required: true, label: "短代码", placeholder: "请输入短代码", span: 12 },
   { prop: "bin", label: "Bin", placeholder: "请输入Bin", span: 12 },
   { prop: "logo", label: "Logo", placeholder: "请输入Logo", span: 12 },
   { prop: "short_name", label: "简称", placeholder: "请输入简称", span: 12 },
   { prop: "swift_code", label: "长代码", placeholder: "请输入长代码", span: 12 },
   {
     prop: "status",
+    required: true,
     label: "状态",
     placeholder: "请选择",
     span: 12,
@@ -143,15 +172,6 @@ const formFields = [
   },
 ];
 
-const searchForm = ref({
-  keyword: "",
-  time: "",
-  page: 1,
-  pagesize: 20,
-});
-const total = ref(0);
-const items = ref([]);
-
 const addForm = ref({
   name: "",
   code: "",
@@ -176,40 +196,14 @@ const editForm = ref({
   status_in: -1,
   status_out: -1,
 });
-const multipleSelection = ref([]);
-
-const onSearch = () => {
-  searchForm.value.page = 1;
-  getItems();
-};
-const getItems = async () => {
-  loading.value = true;
-  try {
-    const response = await api.getItems(searchForm.value);
-    items.value = response.items;
-    total.value = response.count;
-  } catch (error) {
-    console.error("获取列表失败:", error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-const onCurrentChange = (page) => {
-  searchForm.value.page = page;
-  getItems();
-};
-const onSizeChange = (size) => {
-  searchForm.value.pagesize = size;
-  getItems();
-};
 
 const onItemAdd = () => {
   dialogMode.value = "add";
   dialogVisible.value = true;
 };
 const onAdd = async (data) => {
-  loading.value = true;
+  if (submitting.value) return;
+  submitting.value = true;
   try {
     await api.add(data);
     dialogVisible.value = false;
@@ -218,7 +212,7 @@ const onAdd = async (data) => {
   } catch (error) {
     console.error("获取列表失败:", error);
   } finally {
-    loading.value = false;
+    submitting.value = false;
   }
 };
 const onItemEdit = (item) => {
@@ -227,7 +221,8 @@ const onItemEdit = (item) => {
   dialogVisible.value = true;
 };
 const onEdit = async (data) => {
-  loading.value = true;
+  if (submitting.value) return;
+  submitting.value = true;
   try {
     await api.edit(data);
     dialogVisible.value = false;
@@ -236,42 +231,7 @@ const onEdit = async (data) => {
   } catch (error) {
     console.error("获取列表失败:", error);
   } finally {
-    loading.value = false;
+    submitting.value = false;
   }
 };
-const onDelete = () => {
-  if (multipleSelection.value.length === 0) {
-    ElMessage.warning("请先选择要删除的项");
-    return;
-  }
-  ElMessageBox.confirm("此操作将永久删除选中数据, 是否继续?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const loadingInstance = ElLoading.service({ fullscreen: true });
-      try {
-        const ids = multipleSelection.value.map((item) => item.id);
-        await api.del({ ids: ids });
-        ElMessage.success("删除成功");
-        getItems();
-      } catch {
-        // 请求错误由统一请求层提示。
-      } finally {
-        loadingInstance.close();
-      }
-    })
-    .catch(() => {
-      // catch error
-    });
-};
-
-const handleSelectionChange = (val) => {
-  multipleSelection.value = val;
-};
-
-onMounted(() => {
-  getItems();
-});
 </script>

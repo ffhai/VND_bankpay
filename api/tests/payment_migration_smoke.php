@@ -23,7 +23,7 @@ try {
     $channel = UserModel::create(['type'=>'channel','username'=>'check_c_'.$suffix,'password'=>'','balance'=>1000000,'status'=>1]);
     $merchant = UserModel::create(['type'=>'merchant','username'=>'check_m_'.$suffix,'password'=>'','balance'=>0,'status'=>1]);
     $bankuser = BankUserModel::create(['uid'=>$channel['id'],'name'=>'CHECK USER','idcard'=>'check','status'=>1]);
-    $card = BankCardsModel::create(['uid'=>$channel['id'],'bank_number'=>'999'.$suffix,'bank_code'=>'ICB','bank_user_id'=>$bankuser['id'],'status'=>1,'notify_type'=>'notify','balance'=>0]);
+    $card = BankCardsModel::create(['uid'=>$channel['id'],'bank_number'=>(string) random_int(1000000000, 9999999999),'bank_code'=>'ICB','bank_user_id'=>$bankuser['id'],'status'=>1,'notify_type'=>'notify','balance'=>0]);
     $params = ['trade_no'=>'check_'.$suffix,'pay_type'=>'bank2bank','bank_code'=>'ICB','amount'=>100,'notify_url'=>'','return_url'=>''];
     $params['notify_url'] = 'https://example.invalid/callback';
     $order = OrderService::createOrder($params, ['uid'=>$merchant['id']]);

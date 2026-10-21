@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `dt_bank_user`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idcard`(`idcard`, `uid`) USING BTREE,
   INDEX `getOptions`(`uid`, `status`) USING BTREE
-) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 CREATE TABLE IF NOT EXISTS `dt_bank_cards`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `dt_bank_cards`  (
   INDEX `createOrder1`(`bank_code`, `limit_in_max`, `limit_out_max`, `status`) USING BTREE,
   INDEX `task_getBank`(`uid`, `online_account`, `online_password`, `phone_number`, `notify_type`, `notify_device`, `status`) USING BTREE,
   INDEX `task_getBankIsSet`(`uid`, `notify_type`, `notify_device`, `status`) USING BTREE
-) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 CREATE TABLE IF NOT EXISTS `dt_device_notify`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `dt_device_notify`  (
   `status` tinyint(1) NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `task_online_smscode`(`uid`, `type`, `phone_number`, `time`) USING BTREE
-) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 CREATE TABLE IF NOT EXISTS `dt_order`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,

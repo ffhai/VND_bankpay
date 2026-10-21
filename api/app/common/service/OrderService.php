@@ -20,50 +20,71 @@ use think\facade\Db;
 
 class OrderService extends Service
 {
-    public static function confirmed(array $post,array $userItem): void
+    public static function confirmed(array $post, array $userItem): array
     {
-        //提交回调任务
-        $orderModel = new OrderModel();
-        $appModel = new AppListModel();
-
-        $orderItem = $orderModel->where('order_id','=',$post['order_id'])->find();
-        if(!$orderItem){
-            throw new RequestException('订单不存在');
-        }
-        $orderItem = $orderItem->toArray();
-
-        if(isset($userItem['id'])){
-            $ownerField = ($userItem['type'] ?? '') === 'channel' ? 'channel_uid' : 'trade_uid';
-            if($userItem['id'] != $orderItem[$ownerField]){
-                throw new RequestException('无权限操作当前订单');
-            }
-            if($orderItem['status'] != OrderModel::STATUS_PAYING){
-                throw new RequestException('当前状态不允许操作');
-            }
+        $orderId = $post['order_id'] ?? null;
+        if (!is_string($orderId) || $orderId === '') {
+            throw new RequestException('订单号不能为空');
         }
 
-        $post['status'] = OrderModel::STATUS_PAYED;
-        $post['pay_time'] = time();
-        OrderModel::update($post, ['order_id'=>$post['order_id']]);
-        $orderItem = array_merge($orderItem, $post);
+        return Db::transaction(function () use ($orderId, $userItem) {
+            $order = OrderModel::where('order_id', $orderId)->lock(true)->find();
+            if (!$order) {
+                throw new RequestException('订单不存在');
+            }
+            $orderItem = $order->toArray();
+            if (isset($userItem['id'])) {
+                $ownerField = ($userItem['type'] ?? '') === 'channel' ? 'channel_uid' : 'trade_uid';
+                if ((int) $userItem['id'] !== (int) $orderItem[$ownerField]) {
+                    throw new RequestException('无权限操作当前订单');
+                }
+            }
 
-        if(!empty($orderItem['notify_url'])){
-            $appItem = $appModel->getItemByUid($orderItem['trade_uid']);
-            if($appItem){
-                $params = self::build_order_params($orderItem,$appItem);
-                $params['sign'] = AppSignService::order_sign($params,$appItem['secret']);
-
-                $url = $orderItem['notify_url'] .'?'. http_build_query($params);
-
-                $params = [
-                    'data'=>[
-                        'order_id'=>$orderItem['order_id'],
-                        'url'=>$url
-                    ]
+            $reviewReason = null;
+            if ((int) $orderItem['settlement_time'] > 0) {
+                $reviewReason = 'already_settled';
+                $message = '订单已结算，禁止再次确认，请人工核查';
+            } elseif ((int) $orderItem['status'] === OrderModel::STATUS_FAIL) {
+                $reviewReason = 'refunded_or_closed';
+                $message = '订单已退款或关闭，禁止再次确认，请人工核查';
+            } elseif (!in_array((int) $orderItem['status'], [OrderModel::STATUS_PAYING, OrderModel::STATUS_PAYED], true)) {
+                $reviewReason = 'invalid_status';
+                $message = '当前订单状态不允许确认，请人工核查';
+            }
+            if ($reviewReason !== null) {
+                Log::warning('订单确认需人工核查：' . json_encode(['order_id'=>$orderId, 'reason'=>$reviewReason]));
+                throw new RequestException($message, 0, [
+                    'order_id'=>$orderId, 'manual_review'=>true, 'reason'=>$reviewReason,
+                ]);
+            }
+            if ((int) $orderItem['status'] === OrderModel::STATUS_PAYED) {
+                return [
+                    'order_id'=>$orderId, 'result'=>'already_processed',
+                    'status'=>OrderModel::STATUS_PAYED, 'pay_time'=>(int) $orderItem['pay_time'],
                 ];
-                TaskService::addTask(TaskService::KEY_NOTIFY,$params);
             }
-        }
+
+            // Never use request fields as the update payload.
+            $changes = ['status'=>OrderModel::STATUS_PAYED, 'pay_time'=>time()];
+            OrderModel::where('id', $orderItem['id'])->update($changes);
+            $orderItem = array_merge($orderItem, $changes);
+
+            if (!empty($orderItem['notify_url'])) {
+                $appItem = (new AppListModel())->getItemByUid($orderItem['trade_uid']);
+                if ($appItem) {
+                    $params = self::build_order_params($orderItem, $appItem);
+                    $params['sign'] = AppSignService::order_sign($params, $appItem['secret']);
+                    $url = $orderItem['notify_url'] . '?' . http_build_query($params);
+                    TaskService::addTask(TaskService::KEY_NOTIFY, [
+                        'data'=>['order_id'=>$orderId, 'url'=>$url],
+                    ]);
+                }
+            }
+            return [
+                'order_id'=>$orderId, 'result'=>'confirmed',
+                'status'=>OrderModel::STATUS_PAYED, 'pay_time'=>$changes['pay_time'],
+            ];
+        });
     }
 
     /**
@@ -137,6 +158,7 @@ class OrderService extends Service
      */
     public static function createOrder(array $params,array $appItem):array
     {
+        $params['amount'] = \app\common\utils\AmountUtils::integer($params['amount'] ?? null, false, false);
         $orderModel = new OrderModel();
 
         $orderItem = [
@@ -229,7 +251,31 @@ class OrderService extends Service
         $orderItem['create_time'] = time();
         $orderItem['expire_time'] = $orderItem['create_time'] + $payTypeItem['expire_time'];
         $orderItem['pay_url'] = url('pay/index',['oid'=>$orderItem['order_id']],'',true)->build();
-        Db::transaction(function () use ($orderModel, $orderItem) {
+        return Db::transaction(function () use ($orderModel, $orderItem, $bankCardsItem) {
+            BankDataService::validateCard($bankCardsItem, (int) $bankCardsItem['uid'], (int) $bankCardsItem['id']);
+            $card = BankCardsModel::where('id', $bankCardsItem['id'])->lock(true)->find();
+            if ((int) $card['status'] !== StatusEnum::STATUS_1
+                || $card['bank_number'] !== $bankCardsItem['bank_number']
+                || $card['bank_code'] !== $bankCardsItem['bank_code']
+                || (int) $card['bank_user_id'] !== (int) $bankCardsItem['bank_user_id']) {
+                throw new RequestException('收款资料已变更，请重新下单');
+            }
+            $bank = \app\common\model\BanksModel::where('code', $card['bank_code'])->find();
+            $holder = \app\common\model\BankUserModel::find($card['bank_user_id']);
+            if ((int) $bank['status_in'] !== StatusEnum::STATUS_1) {
+                throw new RequestException('当前银行已关闭入款');
+            }
+            $orderItem = array_merge($orderItem, [
+                'bank_card_id'=>(int) $card['id'],
+                'bank_user_id'=>(int) $holder['id'],
+                'bank_number'=>$card['bank_number'],
+                'bank_code'=>$bank['code'],
+                'bank_bin'=>$bank['bin'],
+                'bank_name'=>$bank['name'],
+                'bank_short_name'=>$bank['short_name'],
+                'account_name'=>$holder['name'],
+                'snapshot_source'=>'created',
+            ]);
             BalanceService::change(
                 (int) $orderItem['channel_uid'],
                 -(int) $orderItem['amount'],
@@ -238,9 +284,48 @@ class OrderService extends Service
                 'sys'
             );
             $orderModel->save($orderItem);
+            return $orderItem;
         });
+    }
 
-        return $orderItem;
+
+    public static function expireOrder(array $params): array
+    {
+        if (!is_string($params['order_id'] ?? null) || $params['order_id'] === '') {
+            throw new RequestException('订单号不能为空');
+        }
+        return Db::transaction(function () use ($params) {
+            $order = OrderModel::where('order_id', (string) ($params['order_id'] ?? ''))->lock(true)->find();
+            if (!$order) { throw new RequestException('订单不存在'); }
+            if ((int) $order['settlement_time'] > 0 || (int) $order['status'] === OrderModel::STATUS_PAYED) {
+                throw new RequestException('已支付或已结算订单禁止超时退款，请人工核查', 0, ['manual_review'=>true]);
+            }
+            if ((int) $order['status'] === OrderModel::STATUS_FAIL) {
+                $refunded = BalanceLogModel::where('user_id', $order['channel_uid'])
+                    ->where('type', BalanceLogModel::TYPE_ORDER_CANCEL)
+                    ->where('remark', $order['order_id'])->where('change_amount', $order['amount'])->find();
+                if (!$refunded) {
+                    throw new RequestException('订单已关闭但未找到退款流水，请人工核查', 0,
+                        ['manual_review'=>true, 'reason'=>'closed_without_refund_record']);
+                }
+                return ['order_id'=>$order['order_id'], 'result'=>'already_processed'];
+            }
+            if ((int) $order['status'] !== OrderModel::STATUS_PAYING || $order['pay_type'] !== \app\common\model\PayTypeModel::TYPE_BANK2BANK) {
+                throw new RequestException('当前状态或支付方式不支持超时退款');
+            }
+            if ((int) $order['expire_time'] >= time() - 60*30) {
+                return ['order_id'=>$order['order_id'], 'result'=>'not_expired'];
+            }
+            if (BalanceLogModel::where('user_id', $order['channel_uid'])
+                ->where('type', BalanceLogModel::TYPE_ORDER_CANCEL)->where('remark', $order['order_id'])->find()) {
+                throw new RequestException('订单已有退款流水，禁止重复退款，请人工核查', 0,
+                    ['manual_review'=>true, 'reason'=>'refund_record_already_exists']);
+            }
+            BalanceService::change((int) $order['channel_uid'], (int) $order['amount'],
+                BalanceLogModel::TYPE_ORDER_CANCEL, $order['order_id'], 'sys');
+            OrderModel::where('id', $order['id'])->update(['status'=>OrderModel::STATUS_FAIL]);
+            return ['order_id'=>$order['order_id'], 'result'=>'refunded'];
+        });
     }
 
     public static function weightedRandom($items,$weight = 'weight') {

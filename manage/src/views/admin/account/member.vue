@@ -84,8 +84,8 @@
           <el-input-number
             v-model="adjustForm.amount"
             :precision="0"
-            :min="-1000000"
-            :max="1000000"
+            :min="-9999999999999"
+            :max="9999999999999"
             :step="1"
             style="width: 100%"
             placeholder="正数增加，负数扣减（整数）"
@@ -237,7 +237,7 @@ const onAdjust = async () => {
 
   // 直接提交整数金额，不做单位换算
   const changeAmount = Number(adjustForm.value.amount);
-  if (!Number.isSafeInteger(changeAmount)) {
+  if (!Number.isSafeInteger(changeAmount) || Math.abs(changeAmount) > 9999999999999) {
     ElMessage.warning("金额必须为整数");
     return;
   }

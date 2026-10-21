@@ -100,11 +100,7 @@ class Online extends \app\common\basics\Api
         $params = $this->request->param();
         //'bank_card_id' => '1',
         //'data' => '[{"date": "11/10/2026", "content": "6284IBT1aJWXZ4Z6.ABCD1234.20261011.192723.000005013802.VO THI TUYET HONG.970433", "reference": "Reference number: 5414 - 32443", "amount": "+ 123,000 VND"}, {"date": "11/10/2026", "content": "6284IBT1aJWXZB2X.VO THI TUYET HONG chuyen tien.20261011.192634.000005013802.VO THI TUYET HONG.970433", "reference": "Reference number: 5423 - 27978", "amount": "+ 10,000 VND"}, {"date": "11/10/2026", "content": "6284IBT1aJWX6H1N.VO THI TUYET HONG chuyen tien.20261011.191349.000005013802.VO THI TUYET HONG.970433", "reference": "Reference number: 5424 - 63325", "amount": "+ 10,000 VND"}]'
-        $balance = $this->request->param('balance', 0);
-        if (filter_var($balance, FILTER_VALIDATE_INT) === false) {
-            return AjaxUtils::error('金额必须为整数');
-        }
-        $balance = (int) $balance;
+        $balance = \app\common\utils\AmountUtils::integer($this->request->param('balance', 0));
         $bank_card_id = $this->request->param('bank_card_id',0,'intval');
         $transactions = $this->request->param('data','[]');
         $transactions = json_decode($transactions,true);
@@ -146,7 +142,7 @@ class Online extends \app\common\basics\Api
                 // 提取正负号和数字部分
                 preg_match('/([-+]?)\s*([\d,]+)/', $item['amount'], $amountMatches);
                 $sign = $amountMatches[1] === '-' ? -1 : 1;
-                $num = (int)str_replace(',', '', $amountMatches[2]);
+                $num = \app\common\utils\AmountUtils::integer(str_replace(',', '', $amountMatches[2]));
                 $amount = $sign * $num;
 
                 $result[] = [
@@ -160,17 +156,26 @@ class Online extends \app\common\basics\Api
 
         //匹配订单
         $orderModel = new OrderModel();
+        $manualReview = [];
         foreach($result as $item){
             if(strlen($item['remark']) == config('order.ps_length')){
                 $orderItem = $orderModel->where('ps','=',$item['remark'])->field('order_id')->order('id desc')->find();
                 //&& $orderItem['status'] == OrderModel::STATUS_PAYING
                 if($orderItem ){
                     Log::info('网银匹配订单：' . $orderItem['order_id']);
-                    OrderService::confirmed(['order_id'=>$orderItem['order_id']],[]);
+                    try {
+                        OrderService::confirmed(['order_id'=>$orderItem['order_id']],[]);
+                    } catch (\app\common\exception\RequestException $e) {
+                        if (empty($e->data['manual_review'])) {
+                            throw $e;
+                        }
+                        $manualReview[] = $e->data;
+                        Log::warning('网银确认异常：' . json_encode($e->data));
+                    }
                 }
             }
         }
-        return AjaxUtils::success(['sleep'=>config('order.online_transaction_sleep')]);
+        return AjaxUtils::success(['sleep'=>config('order.online_transaction_sleep'), 'manual_review'=>$manualReview]);
     }
 
 

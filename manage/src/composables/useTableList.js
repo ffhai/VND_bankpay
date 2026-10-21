@@ -24,13 +24,16 @@ export function useTableList(options) {
     confirmMessage = "此操作将永久删除选中数据, 是否继续?",
     afterDelete,
     immediate = true,
+    deleteSuccessMessage = "删除成功",
   } = options;
 
   const loading = ref(false);
+  const deleting = ref(false);
   const items = ref([]);
   const total = ref(0);
   const extend = ref(null);
   const multipleSelection = ref([]);
+  const rowActions = ref({});
   const searchForm = ref({ page: 1, pagesize: 20, ...initialSearch });
   let latestRequestId = 0;
 
@@ -40,9 +43,14 @@ export function useTableList(options) {
     try {
       const response = await fetchList({ ...searchForm.value });
       if (requestId !== latestRequestId) return;
+      const lastPage = Math.max(1, Math.ceil((response?.count ?? 0) / searchForm.value.pagesize));
+      if (searchForm.value.page > lastPage) {
+        searchForm.value.page = lastPage;
+        return getItems();
+      }
       items.value = response?.items ?? [];
       total.value = response?.count ?? 0;
-      extend.value = response?.extend ?? null;
+      extend.value = response?.extend ?? response?.sum ?? null;
     } catch (error) {
       if (requestId === latestRequestId) {
         console.error("获取列表失败:", error);
@@ -54,25 +62,43 @@ export function useTableList(options) {
 
   const onSearch = () => {
     searchForm.value.page = 1;
-    getItems();
+    return getItems();
   };
 
   const onCurrentChange = (page) => {
     searchForm.value.page = page;
-    getItems();
+    return getItems();
   };
 
   const onSizeChange = (size) => {
     searchForm.value.pagesize = size;
-    getItems();
+    searchForm.value.page = 1;
+    return getItems();
+  };
+
+  const onReset = () => {
+    searchForm.value = { ...initialSearch, page: 1, pagesize: searchForm.value.pagesize };
+    multipleSelection.value = [];
+    return getItems();
   };
 
   const handleSelectionChange = (val) => {
     multipleSelection.value = val;
   };
 
+  const isRowActionPending = (key) => Boolean(rowActions.value[key]);
+  const runRowAction = async (key, action) => {
+    if (isRowActionPending(key)) return;
+    rowActions.value[key] = true;
+    try {
+      return await action();
+    } finally {
+      delete rowActions.value[key];
+    }
+  };
+
   const onDelete = () => {
-    if (!deleteApi) {
+    if (!deleteApi || deleting.value) {
       return;
     }
     if (multipleSelection.value.length === 0) {
@@ -80,7 +106,8 @@ export function useTableList(options) {
       return;
     }
 
-    ElMessageBox.confirm(confirmMessage, "提示", {
+    deleting.value = true;
+    return ElMessageBox.confirm(confirmMessage, "提示", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning",
@@ -90,7 +117,11 @@ export function useTableList(options) {
         try {
           await deleteApi({ ids: multipleSelection.value.map((item) => item.id) });
           multipleSelection.value = [];
-          ElMessage.success("删除成功");
+          ElMessage.success(
+            typeof deleteSuccessMessage === "function"
+              ? deleteSuccessMessage()
+              : deleteSuccessMessage
+          );
           await getItems();
           await afterDelete?.();
         } catch (error) {
@@ -101,6 +132,9 @@ export function useTableList(options) {
       })
       .catch(() => {
         // 取消删除
+      })
+      .finally(() => {
+        deleting.value = false;
       });
   };
 
@@ -110,6 +144,7 @@ export function useTableList(options) {
 
   return {
     loading,
+    deleting,
     items,
     total,
     extend,
@@ -117,9 +152,12 @@ export function useTableList(options) {
     searchForm,
     getItems,
     onSearch,
+    onReset,
     onCurrentChange,
     onSizeChange,
     handleSelectionChange,
+    isRowActionPending,
+    runRowAction,
     onDelete,
   };
 }

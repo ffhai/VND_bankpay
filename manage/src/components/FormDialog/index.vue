@@ -4,9 +4,18 @@
     :title="title"
     :width="width"
     :destroy-on-close="destroyOnClose"
+    :close-on-click-modal="!loading"
+    :close-on-press-escape="!loading"
+    :show-close="!loading"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" :label-width="labelWidth">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="resolvedRules"
+      :label-width="labelWidth"
+      @submit.prevent="onSubmit"
+    >
       <el-row :gutter="gutter">
         <el-col
           v-for="field in visibleFields"
@@ -60,7 +69,8 @@
                 v-else
                 v-bind="field.props"
                 v-model="form[field.prop]"
-                :type="field.type === 'textarea' ? 'textarea' : 'text'"
+                :type="['textarea', 'password'].includes(field.type) ? field.type : 'text'"
+                :show-password="field.type === 'password'"
                 :disabled="isDisabled(field)"
                 :placeholder="field.placeholder"
               />
@@ -71,7 +81,7 @@
     </el-form>
     <template #footer>
       <slot name="footer" :submit="onSubmit" :close="onClose">
-        <el-button @click="onClose">取 消</el-button>
+        <el-button :disabled="loading" @click="onClose">取 消</el-button>
         <el-button type="primary" :loading="loading" @click="onSubmit">确 定</el-button>
       </slot>
     </template>
@@ -105,6 +115,18 @@ const emit = defineEmits(["update:modelValue", "submit"]);
 const formRef = ref(null);
 // 弹窗内部的编辑副本（自身可写，无需对 props 做双向绑定）
 const form = ref({});
+const validating = ref(false);
+const resolvedRules = computed(() => ({
+  ...Object.fromEntries(
+    props.fields
+      .filter((field) => field.required)
+      .map((field) => [
+        field.prop,
+        [{ required: true, message: `请填写${field.label}`, trigger: "change" }],
+      ])
+  ),
+  ...props.rules,
+}));
 
 const isHidden = (field) => {
   if (typeof field.hidden === "function") {
@@ -119,7 +141,7 @@ const getOptions = (field) =>
 const visibleFields = computed(() => props.fields.filter((field) => !isHidden(field)));
 
 const isDisabled = (field) =>
-  field.disabled ?? (props.mode === "edit" && Boolean(field.disabledInEdit));
+  props.loading || (field.disabled ?? (props.mode === "edit" && Boolean(field.disabledInEdit)));
 
 // 每次打开都以最新的 model 作为初始值，并清掉上一次的校验残留
 watch(
@@ -134,16 +156,25 @@ watch(
   { immediate: true }
 );
 
-const onClose = () => emit("update:modelValue", false);
+const onClose = () => {
+  if (!props.loading) emit("update:modelValue", false);
+};
 
 const onSubmit = async () => {
-  if (formRef.value) {
-    const valid = await formRef.value.validate().catch(() => false);
-    if (!valid) {
-      return;
+  if (props.loading || validating.value) return;
+  validating.value = true;
+  try {
+    if (formRef.value) {
+      const valid = await formRef.value.validate().catch(() => false);
+      if (!valid) {
+        return;
+      }
     }
+    emit("submit", { ...form.value });
+    await nextTick();
+  } finally {
+    validating.value = false;
   }
-  emit("submit", { ...form.value });
 };
 
 defineExpose({ formRef });

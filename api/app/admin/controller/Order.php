@@ -24,8 +24,8 @@ class Order extends CrudController
         $data = $this->request->param();
         $this->validate->goCheck('confirmed',$data);
         Log::info('管理员确认订单：'.'uid->'.$this->userItem['id'].' '.json_encode($data));
-        \app\common\service\OrderService::confirmed($data,[]);
-        return AjaxUtils::success();
+        $result = \app\common\service\OrderService::confirmed($data,[]);
+        return AjaxUtils::success($result['result'] === 'already_processed' ? '订单已处理，无需重复确认' : '确认成功', $result);
     }
 
     public function notify(){

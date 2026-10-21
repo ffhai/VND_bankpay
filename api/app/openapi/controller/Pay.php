@@ -3,8 +3,6 @@ namespace app\openapi\controller;
 
 use app\BaseController;
 use app\common\model\OrderModel;
-use app\common\service\BanksService;
-use app\common\service\BankUserService;
 use app\common\utils\AjaxUtils;
 use think\App;
 use think\facade\Cache;
@@ -20,29 +18,22 @@ class Pay extends BaseController
             return View::fetch('error',['msg'=>'参数错误']);
         }
         $orderModel = new OrderModel();
-        $orderItem = $orderModel
-            ->withJoin([
-                'bankcard'=>['bank_number','bank_code','bank_user_id']
-            ])
-            ->where('order_id','=',$oid)
-            ->field('order_id,amount,ps,expire_time')
-            ->find();
-        if(!$orderItem){
-            return View::fetch('error',['msg'=>'订单不存在']);
+        $orderItem = $orderModel->where('order_id', $oid)->find();
+        if (!$orderItem) {
+            return View::fetch('error', ['msg'=>'订单不存在']);
         }
         $orderItem = $orderItem->toArray();
-        $bankInfo = BanksService::getItemByCode($orderItem['bankcard']['bank_code']);
-        if(!$bankInfo){
-            Log::error("openapi/pay/index获取银行信息失败：".$orderItem['bankcard']['bank_code']);
-            return View::fetch('error',['msg'=>'银行异常，请稍后重试！']);
+        if ($orderItem['snapshot_source'] === 'missing' || empty($orderItem['bank_bin']) || empty($orderItem['account_name'])) {
+            return View::fetch('error', ['msg'=>'历史收款快照缺失，请联系管理员人工核查']);
         }
-        $bankUser = BankUserService::getItemById($orderItem['bankcard']['bank_user_id']);
-        if(!$bankUser){
-            Log::error("openapi/pay/index获取户名信息失败：".$orderItem['bankcard']['bank_user_id']);
-            return View::fetch('error',['msg'=>'银行异常，请稍后重试！']);
+        if ((int) $orderItem['status'] !== OrderModel::STATUS_PAYING || (int) $orderItem['expire_time'] <= time()) {
+            return View::fetch('error', ['msg'=>'订单已完成、关闭或过期，不可继续付款']);
         }
+        $bankInfo = ['bin'=>$orderItem['bank_bin'], 'name'=>$orderItem['bank_name'], 'short_name'=>$orderItem['bank_short_name']];
+        $bankUser = ['name'=>$orderItem['account_name']];
+        $orderItem['bankcard'] = ['bank_number'=>$orderItem['bank_number']];
 
-        $qrcodeImg = Cache::get('QRCODE_'.$orderItem['order_id']);
+        $qrcodeImg = Cache::get('QRCODE_SNAPSHOT_'.$orderItem['order_id']);
         if(empty($qrcodeImg)){
             $vietqr = new \Vietqr();
             $obj = $vietqr->generate([
@@ -63,7 +54,7 @@ class Pay extends BaseController
 
             $qrcodeText = $obj['data']['qrCode'];
             $qrcodeImg = $obj['data']['qrDataURL'];
-            Cache::set('QRCODE_'.$orderItem['order_id'],$qrcodeImg);
+            Cache::set('QRCODE_SNAPSHOT_'.$orderItem['order_id'],$qrcodeImg,max(1, $orderItem['expire_time'] - time()));
         }
 
         View::assign('qrcode',$qrcodeImg);

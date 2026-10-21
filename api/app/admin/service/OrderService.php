@@ -19,6 +19,8 @@ class OrderService extends Service
                 'pay_type@order_model.pay_type',
                 'status@order_model.status',
                 'trade_uid@order_model.trade_uid',
+                'channel_uid@order_model.channel_uid',
+                'channel_uid@order_model.channel_uid',
                 'bank_number@order_model.bank_number',
             ],
             'datetime' => ['time@order_model.create_time'],
@@ -55,7 +57,7 @@ class OrderService extends Service
     }
     public static function del(array $ids,array $userItem): void
     {
-        OrderModel::destroy($ids,true);
+        throw new \app\common\exception\RequestException('订单记录不可删除');
     }
 
 

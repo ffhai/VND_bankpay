@@ -17,6 +17,13 @@ class BankUser extends CrudController
         return $params;
     }
 
+    public function del(){
+        $ids = $this->request->param('ids/a');
+        $this->validate->idsCheck($ids);
+        $result = \app\common\service\BankDataService::deleteOrDisable('holder', $ids, (int) $this->userItem['id']);
+        return \app\common\utils\AjaxUtils::success('已停用' . $result['disabled'] . '项，删除未引用资料' . $result['deleted'] . '项', $result);
+    }
+
     public function __construct(App $app)
     {
         parent::__construct($app);

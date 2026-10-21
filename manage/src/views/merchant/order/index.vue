@@ -41,7 +41,8 @@
           </el-select>
         </el-form-item>
         <el-form-item class="search-actions">
-          <el-button type="primary" @click="onSearch">查询</el-button>
+          <el-button type="primary" :loading="loading" @click="onSearch">查询</el-button>
+          <el-button :disabled="loading" @click="onReset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -101,7 +102,14 @@
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="180">
           <template #default="scope">
-            <el-button type="warning" size="small" @click="onNotify(scope.row)">回调</el-button>
+            <el-button
+              type="warning"
+              size="small"
+              :disabled="scope.row.status !== 2"
+              :loading="isRowActionPending('notify:' + scope.row.order_id)"
+              @click="onNotify(scope.row)"
+              >回调</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -116,81 +124,64 @@
   </div>
 </template>
 <script setup>
+import { useTableList } from "@/composables/useTableList";
 import CrudPagination from "@/components/CrudPagination/index.vue";
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import order from "@/api/merchant/order";
 import payType from "@/api/admin/payType";
-const loading = ref(false);
 
-const searchForm = ref({
-  time: "",
-  pay_type: "",
-  order_id: "",
-  trade_no: "",
-  ps: "",
-  status: "",
-  page: 1,
-  pagesize: 20,
+const {
+  loading,
+  items,
+  total,
+  searchForm,
+  getItems,
+  onSearch,
+  onReset,
+  onCurrentChange,
+  onSizeChange,
+  runRowAction,
+  isRowActionPending,
+  handleSelectionChange,
+  extend,
+} = useTableList({
+  fetchList: (params) => order.getItems(params),
+  initialSearch: {
+    time: "",
+    pay_type: "",
+    order_id: "",
+    trade_no: "",
+    ps: "",
+    status: "",
+  },
 });
-const total = ref(0);
-const items = ref([]);
-const multipleSelection = ref([]);
+const sum = computed(() => extend.value ?? { amount: 0 });
+
 const paytypeList = ref([]);
-const sum = ref({
-  amount: 0,
-});
 
-const onSearch = () => {
-  searchForm.value.page = 1;
-  getItems();
-};
-const getItems = async () => {
-  loading.value = true;
-  try {
-    const response = await order.getItems(searchForm.value);
-    items.value = response.items;
-    total.value = response.count;
-    sum.value = response.sum;
-  } catch (error) {
-    console.error("获取列表失败:", error);
-  } finally {
-    loading.value = false;
-  }
-};
-const handleSelectionChange = (val) => {
-  multipleSelection.value = val;
-};
-const onCurrentChange = (page) => {
-  searchForm.value.page = page;
-  getItems();
-};
-const onSizeChange = (size) => {
-  searchForm.value.pagesize = size;
-  getItems();
-};
-
-const onNotify = (item) => {
-  ElMessageBox.confirm("此操作将回调商户, 是否继续?", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(async () => {
-      const loadingInstance = ElLoading.service({ fullscreen: true });
-      try {
-        await order.notify({ order_id: item.order_id });
-        ElMessage.success("操作成功");
-        getItems();
-      } catch {
-        // 请求错误由统一请求层提示。
-      } finally {
-        loadingInstance.close();
-      }
+const onNotify = (item) =>
+  runRowAction("notify:" + item.order_id, () => {
+    return ElMessageBox.confirm("此操作将回调商户, 是否继续?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
     })
-    .catch(() => {
-      // catch error
-    });
-};
+      .then(async () => {
+        const loadingInstance = ElLoading.service({ fullscreen: true });
+        try {
+          await order.notify({ order_id: item.order_id });
+          ElMessage.success("操作成功");
+          getItems();
+        } catch {
+          // 请求错误由统一请求层提示。
+        } finally {
+          loadingInstance.close();
+        }
+      })
+      .catch(() => {
+        // catch error
+      });
+  });
 const loadPayTypeList = async () => {
   try {
     const response = await payType.getOptions();
@@ -201,7 +192,6 @@ const loadPayTypeList = async () => {
 };
 
 onMounted(() => {
-  getItems();
   loadPayTypeList();
 });
 </script>

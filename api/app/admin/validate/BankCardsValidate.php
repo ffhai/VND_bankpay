@@ -10,9 +10,9 @@ use app\common\basics\Validate;
 class BankCardsValidate extends Validate
 {
     protected $rule = [
-        'balance' => 'integer',
-        'limit_in_max' => 'integer',
-        'limit_out_max' => 'integer',
+        'balance' => 'integer|egt:0|elt:9999999999999',
+        'limit_in_max' => 'integer|egt:0|elt:9999999999999',
+        'limit_out_max' => 'integer|egt:0|elt:9999999999999',
         'id'           => 'require|integer',
         'ids'          => 'require|array',
         'bank_number'        => 'require',

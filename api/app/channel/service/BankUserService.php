@@ -64,10 +64,7 @@ class BankUserService extends Service
 
     public static function del(array $ids,array $userItem): void
     {
-        $model = new BankUserModel();
-        $model->where('id','in',$ids)
-            ->where('uid','=',$userItem['id'])
-            ->delete();
+        \app\common\service\BankDataService::deleteOrDisable('holder', $ids, (int) $userItem['id']);
     }
 
     public static function getOptions(array $userItem): array

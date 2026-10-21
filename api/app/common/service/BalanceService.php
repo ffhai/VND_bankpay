@@ -25,7 +25,7 @@ class BalanceService extends Service
      */
     public static $typeMap = [
         BalanceLogModel::TYPE_ORDER_CREATE => '创建订单',
-        BalanceLogModel::TYPE_ORDER_CANCEL => '取消订单',
+        BalanceLogModel::TYPE_ORDER_CANCEL => '超时退款',
         BalanceLogModel::TYPE_ORDER_SETTLEMENT => '订单结算',
         BalanceTypeEnum::RECHARGE => '充值',
         BalanceTypeEnum::DEDUCT => '扣减',
@@ -92,6 +92,7 @@ class BalanceService extends Service
      */
     public static function change(int $userId, int $changeAmount, string $type, string $remark = '', string $operator = ''): int
     {
+        \app\common\utils\AmountUtils::integer($changeAmount, true, false);
         if ($changeAmount == 0) {
             throw new RequestException('变动金额不能为0');
         }
@@ -108,6 +109,9 @@ class BalanceService extends Service
 
             $before = (int) $user['balance'];
             $after = $before + $changeAmount;
+            if ($after > \app\common\utils\AmountUtils::MAX) {
+                throw new RequestException('变动后余额不能超过13位整数');
+            }
             if ($after < 0) {
                 throw new RequestException('余额不足，无法扣减');
             }

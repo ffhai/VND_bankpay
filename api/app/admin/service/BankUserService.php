@@ -53,7 +53,7 @@ class BankUserService extends Service
 
     public static function del(array $ids,array $userItem): void
     {
-        BankUserModel::destroy($ids,true);
+        \app\common\service\BankDataService::deleteOrDisable('holder', $ids);
     }
 
     public static function getOptions(array $userItem): array

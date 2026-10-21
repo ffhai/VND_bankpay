@@ -13,7 +13,7 @@ class OrderValidate extends Validate
         'order_id'           => 'require',
         'pay_type'           => 'require',
         'trade_no'           => 'require',
-        'amount'           => 'require|integer|egt:1',
+        'amount'           => 'require|integer|egt:1|elt:9999999999999',
         'notify_url'           => 'require',
     ];
 

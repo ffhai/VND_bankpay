@@ -4,6 +4,8 @@ declare (strict_types = 1);
 
 namespace app\admin\service;
 
+use think\facade\Db;
+
 
 use app\common\basics\Service;
 use app\common\enums\StatusEnum;
@@ -63,33 +65,37 @@ class BankCardsService extends Service
         foreach (['bank_number', 'online_account', 'online_password', 'phone_number'] as $field) {
             $post[$field] = preg_replace('/[\s\p{Z}\x{200B}\x{FEFF}]+/u', '', (string) ($post[$field] ?? ''));
         }
+        foreach (['balance', 'limit_in_max', 'limit_out_max'] as $field) {
+            $post[$field] = \app\common\utils\AmountUtils::integer($post[$field] ?? 0);
+        }
         if (empty($post['bank_number'])) {
             throw new RequestException('卡号不能为空');
         }
-        BankCardsModel::update([
-            'bank_number'          => $post['bank_number'],
-            'bank_code'        => $post['bank_code'],
-            'bank_user_id'        => $post['bank_user_id'],
-            'balance'        => $post['balance'],
-            'online_account'        => $post['online_account'],
-            'online_password'        => $post['online_password'],
-            'phone_number'        => $post['phone_number'],
-            'notify_type'        => $post['notify_type'],
-            'notify_device'        => $post['notify_device'],
-            'limit_in_max'        => $post['limit_in_max'],
-            'limit_out_max'        => $post['limit_out_max'],
-            'remark'        => $post['remark'] ?? '',
-            'status'        => $post['status'] ?? StatusEnum::STATUS_OFF,
-            'update_time'  => time()
-        ], ['id'=>intval($post['id'])]);
+        Db::transaction(function () use ($post, $userItem) {
+            $ownerId = (int) BankCardsModel::where('id', (int) $post['id'])->value('uid');
+            \app\common\service\BankDataService::validateCard($post, $ownerId, (int) $post['id']);
+            BankCardsModel::update([
+                'bank_number'          => $post['bank_number'],
+                'bank_code'        => $post['bank_code'],
+                'bank_user_id'        => $post['bank_user_id'],
+                'balance'        => $post['balance'],
+                'online_account'        => $post['online_account'],
+                'online_password'        => $post['online_password'],
+                'phone_number'        => $post['phone_number'],
+                'notify_type'        => $post['notify_type'],
+                'notify_device'        => $post['notify_device'],
+                'limit_in_max'        => $post['limit_in_max'],
+                'limit_out_max'        => $post['limit_out_max'],
+                'remark'        => $post['remark'] ?? '',
+                'status'        => $post['status'] ?? StatusEnum::STATUS_OFF,
+                'update_time'  => time()
+            ], ['id'=>intval($post['id'])]);
+        });
     }
 
     public static function del(array $ids,array $userItem): void
     {
-        $model = new BankCardsModel();
-        $model->where('id','in',$ids)
-            ->where('uid','=',$userItem['id'])
-            ->delete();
+        \app\common\service\BankDataService::deleteOrDisable('card', $ids);
     }
 
     public static function getOptions(array $userItem): array
