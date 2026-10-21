@@ -27,7 +27,7 @@ class Balance extends Auth
     }
 
     /**
-     * 当前用户的余额（分）
+     * 当前用户的余额（整数）
      */
     public function info()
     {

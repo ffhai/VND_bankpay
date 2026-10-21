@@ -30,4 +30,12 @@ class AppListModel extends CommonModel
             ->field('id,username');
     }
 
+    public function getItemByUid($uid = 0){
+        $data = $this->where('uid','=',$uid)->cache(true,10)->find();
+        if(!$data){
+            return false;
+        }
+        return $data->toArray();
+    }
+
 }

@@ -65,6 +65,13 @@
   border-radius: 8px;
 }
 
+.order-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 @media (max-width: 767px) {
   .search-block {
     padding: 16px;

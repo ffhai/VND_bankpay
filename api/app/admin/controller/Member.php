@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use app\common\basics\CrudController;
 use app\admin\service\UserService;
+use app\common\model\UserModel;
 use app\common\service\BalanceService;
 use app\common\utils\AjaxUtils;
 use app\admin\validate\UserValidate;
@@ -45,7 +46,11 @@ class Member extends CrudController
      */
     public function adjust(){
         $userId = intval($this->request->param('user_id'));
-        $changeAmount = intval($this->request->param('change_amount'));
+        $changeAmount = $this->request->param('change_amount');
+        if (filter_var($changeAmount, FILTER_VALIDATE_INT) === false) {
+            return AjaxUtils::error('金额必须为整数');
+        }
+        $changeAmount = (int) $changeAmount;
         $type = (string) $this->request->param('type', 'adjust');
         $remark = (string) $this->request->param('remark', '');
         $operator = $this->userItem['username'] ?? '';
@@ -59,5 +64,35 @@ class Member extends CrudController
 
         $balanceAfter = BalanceService::change($userId, $changeAmount, $type, $remark, $operator);
         return AjaxUtils::success('调整成功', ['balance_after' => $balanceAfter]);
+    }
+
+    public function getChannelUserList(){
+        $userModel = new UserModel();
+        $data = $userModel
+            ->where('type','=','channel')
+            ->field('id,username')
+            ->order('id')
+            ->select();
+        if($data->isEmpty()){
+            $data = [];
+        }else{
+            $data = $data->toArray();
+        }
+        return AjaxUtils::success($data);
+    }
+
+    public function getMerchantUserList(){
+        $userModel = new UserModel();
+        $data = $userModel
+            ->where('type','=','merchant')
+            ->field('id,username')
+            ->order('id')
+            ->select();
+        if($data->isEmpty()){
+            $data = [];
+        }else{
+            $data = $data->toArray();
+        }
+        return AjaxUtils::success($data);
     }
 }

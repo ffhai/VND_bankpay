@@ -24,6 +24,9 @@ class BalanceService extends Service
      * 新增类型只需在 map 里加一行（键建议用 BalanceTypeEnum 中的常量）。
      */
     public static $typeMap = [
+        BalanceLogModel::TYPE_ORDER_CREATE => '创建订单',
+        BalanceLogModel::TYPE_ORDER_CANCEL => '取消订单',
+        BalanceLogModel::TYPE_ORDER_SETTLEMENT => '订单结算',
         BalanceTypeEnum::RECHARGE => '充值',
         BalanceTypeEnum::DEDUCT => '扣减',
         BalanceTypeEnum::REFUND => '退款',
@@ -69,7 +72,7 @@ class BalanceService extends Service
     }
 
     /**
-     * 获取用户余额（分）
+     * 获取用户余额（整数）
      */
     public static function getBalance(int $userId): int
     {
@@ -78,14 +81,14 @@ class BalanceService extends Service
     }
 
     /**
-     * 变动余额（分），并写入变动记录
+     * 变动余额（整数），并写入变动记录
      *
      * @param int $userId 用户ID
-     * @param int $changeAmount 变动金额（分，正为增加，负为扣减）
+     * @param int $changeAmount 变动金额（整数，正为增加，负为扣减）
      * @param string $type 交易类型
      * @param string $remark 备注
      * @param string $operator 操作员
-     * @return int 变动后余额（分）
+     * @return int 变动后余额（整数）
      */
     public static function change(int $userId, int $changeAmount, string $type, string $remark = '', string $operator = ''): int
     {

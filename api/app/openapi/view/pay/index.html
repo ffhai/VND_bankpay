@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>quầy thanh toán</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .secure-bg {
+            background-color: #f8fafc;
+            background-image:
+                    radial-gradient(#cbd5e1 0.75px, transparent 0.75px),
+                    radial-gradient(#cbd5e1 0.75px, #f8fafc 0.75px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="secure-bg min-h-screen flex items-center justify-center p-4 sm:p-6">
+
+<div class="w-full max-w-2xl bg-white/95 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+
+    <!-- Header / Banner -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-5 text-white text-center">
+        <h1 class="text-xl font-semibold tracking-wide">Thanh toán an toàn</h1>
+        <p class="text-xs sm:text-sm text-blue-100 mt-1">Vui lòng sử dụng ứng dụng được chỉ định để quét mã QR hoặc thực hiện chuyển khoản nhằm hoàn tất thanh toán.</p>
+    </div>
+
+    <div class="p-6 sm:p-8 space-y-6">
+
+        <!-- Countdown Banner -->
+        <div id="countdown-banner" class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-center flex items-center justify-center space-x-2 text-amber-800 text-sm font-medium">
+            <svg class="w-5 h-5 text-amber-600 animate-pulse flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Vui lòng hoàn tất thanh toán trong vòng  <strong id="timer-display" class="text-amber-900 font-bold text-base">0</strong> giây.</span>
+        </div>
+
+        <!-- Main Content Area: Left QR, Right Details -->
+        <div class="flex flex-col md:flex-row items-center md:items-stretch gap-8 bg-slate-50/70 p-6 rounded-xl border border-slate-100">
+
+            <!-- QR Code Box (Left) -->
+            <div class="flex-shrink-0 flex flex-col items-center justify-center md:border-r md:border-slate-200/80 md:pr-8">
+                <div class="w-36 h-36 sm:w-40 sm:h-40 bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center justify-center">
+                    <img src="{$qrcode}" class="w-full h-full text-slate-800">
+                </div>
+                <span class="text-xs text-slate-500 font-medium mt-2.5">Quét mã để chuyển tiền tức thì.</span>
+            </div>
+
+            <!-- Payment Details Fields (Right) -->
+            <div class="w-full flex flex-col justify-between space-y-4 text-sm sm:text-base">
+
+                <!-- Row 1: Bank -->
+                <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
+                    <span class="text-slate-500 font-medium">ngân hàng</span>
+                    <span id="val-bank" class="text-slate-800 font-semibold">{$bankinfo.short_name}</span>
+                </div>
+
+                <!-- Row 2: Amount (With Copy) -->
+                <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
+                    <span class="text-slate-500 font-medium">Số lượng</span>
+                    <div class="flex items-center space-x-3">
+                        <span id="val-amount" class="text-rose-600 font-bold text-lg sm:text-xl">{:number_format($order.amount)}</span>
+                        <button onclick="copyText('val-amount', this)" class="text-xs sm:text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm">bản sao</button>
+                    </div>
+                </div>
+
+                <!-- Row 3: Card Number (With Copy) -->
+                <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
+                    <span class="text-slate-500 font-medium">tài khoản</span>
+                    <div class="flex items-center space-x-3">
+                        <span id="val-card" class="text-slate-800 font-mono font-medium tracking-wide">{$order.bankcard.bank_number}</span>
+                        <button onclick="copyText('val-card', this)" class="text-xs sm:text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm">bản sao</button>
+                    </div>
+                </div>
+
+                <!-- Row 4: Name -->
+                <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
+                    <span class="text-slate-500 font-medium">Tên</span>
+                    <span id="val-name" class="text-slate-800 font-semibold">{$bankuser.name}</span>
+                </div>
+
+                <!-- Row 5: Note / Reference (With Copy) -->
+                <div class="flex justify-between items-center pb-1">
+                    <span class="text-slate-500 font-medium">Nhận xét</span>
+                    <div class="flex items-center space-x-3">
+                        <span id="val-note" class="text-slate-800 font-mono font-semibold bg-amber-50 px-2 py-0.5 rounded text-amber-800">{$order.ps}</span>
+                        <button onclick="copyText('val-note', this)" class="text-xs sm:text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm">bản sao</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Action Button: I have paid (我已支付) -->
+        <div id="paid-btn-container">
+            <button onclick="location.reload()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span>Tôi đã thanh toán</span>
+            </button>
+        </div>
+
+        <!-- Instruction Notes -->
+        <div class="bg-slate-50 rounded-xl p-4 text-xs sm:text-sm text-slate-500 space-y-2 border border-slate-100">
+            <p class="font-semibold text-slate-700 flex items-center">
+                <svg class="w-4 h-4 text-blue-500 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Một vài lưu ý nhỏ:
+            </p>
+            <p>1. Vui lòng đảm bảo bạn chuyển đúng số tiền và ghi rõ nội dung chuyển khoản (ghi chú) được hiển thị trên trang; nếu không, giao dịch chuyển khoản có thể bị chậm trễ hoặc không thành công.</p>
+            <p>2. Sau khi quá trình chuyển khoản hoàn tất, hệ thống sẽ tự động xác minh và xác nhận đơn hàng; vui lòng kiên nhẫn chờ đợi.</p>
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white px-4 py-2.5 rounded-lg text-sm shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50">
+    Đã sao chép thành công.
+</div>
+
+<script>
+    function copyText(elementId, btnElement) {
+        const textToCopy = document.getElementById(elementId).innerText.trim();
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showCopySuccess(btnElement);
+            }).catch(err => {
+                fallbackCopy(textToCopy, btnElement);
+            });
+        } else {
+            fallbackCopy(textToCopy, btnElement);
+        }
+    }
+
+    function fallbackCopy(text, btnElement) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showCopySuccess(btnElement);
+            } else {
+                showToast("Sao chép thất bại; vui lòng nhấn giữ để sao chép thủ công.");
+            }
+        } catch (err) {
+            showToast("Trình duyệt của bạn không hỗ trợ tính năng tự động sao chép.");
+        }
+        document.body.removeChild(textarea);
+    }
+
+    function showCopySuccess(btnElement) {
+        const originalText = btnElement.innerText;
+        btnElement.innerText = "Đã sao chép";
+        btnElement.classList.remove('bg-blue-50', 'text-blue-600', 'hover:bg-blue-100');
+        btnElement.classList.add('bg-emerald-50', 'text-emerald-600');
+
+        showToast("Nội dung đã được sao chép vào bộ nhớ tạm.");
+
+        setTimeout(() => {
+            btnElement.innerText = originalText;
+            btnElement.classList.remove('bg-emerald-50', 'text-emerald-600');
+            btnElement.classList.add('bg-blue-50', 'text-blue-600', 'hover:bg-blue-100');
+        }, 2000);
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+        }, 2000);
+    }
+
+    // Countdown Timer Logic
+    let timeLeft = {$timeout};
+    let orderStatus = {$order.status};
+    const timerDisplay = document.getElementById('timer-display');
+    const countdownBanner = document.getElementById('countdown-banner');
+    const paidBtnContainer = document.getElementById('paid-btn-container');
+
+    if(orderStatus == 1){
+        const timerInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                countdownBanner.className = "bg-rose-50 border border-rose-200 rounded-xl p-3.5 text-center flex items-center justify-center space-x-2 text-rose-800 text-sm font-medium";
+                countdownBanner.innerHTML = `
+                    <svg class="w-5 h-5 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <span>Lệnh thanh toán đã hết hạn; vui lòng thực hiện lại giao dịch.</span>
+                `;
+                if(paidBtnContainer) paidBtnContainer.style.display = 'none';
+            }
+        }, 1000);
+    }
+    if(orderStatus == 2){
+        countdownBanner.className = "bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-center flex items-center justify-center space-x-2 text-emerald-800 text-sm font-medium";
+        countdownBanner.innerHTML = `
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                     <span class="font-medium text-emerald-900">Thanh toán thành công</span>
+                `;
+        if(paidBtnContainer) paidBtnContainer.style.display = 'none';
+    }
+
+</script>
+
+</body>
+</html>

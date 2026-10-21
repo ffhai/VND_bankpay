@@ -1,4 +1,95 @@
 const routesMap = {
+  "/admin/bank": {
+    meta: { title: "银行管理", icon: "HomeFilled" },
+    hidden: false,
+  },
+  "/admin/bank/index": {
+    name: "银行列表",
+    component: () => import("@/views/admin/bank/index.vue"),
+    meta: { title: "银行列表" },
+    hidden: false,
+  },
+  "/admin/bank/user": {
+    name: "银行户名",
+    component: () => import("@/views/admin/bank/user.vue"),
+    meta: { title: "银行户名" },
+    hidden: false,
+  },
+  "/admin/bank/cards": {
+    name: "银行卡片",
+    component: () => import("@/views/admin/bank/cards.vue"),
+    meta: { title: "银行卡片" },
+    hidden: false,
+  },
+  "/admin/order": {
+    meta: { title: "订单管理", icon: "Coin" },
+    hidden: false,
+  },
+  "/admin/order/payType": {
+    name: "支付方式",
+    component: () => import("@/views/admin/order/payType.vue"),
+    meta: { title: "支付方式" },
+    hidden: false,
+  },
+  "/admin/order/index": {
+    name: "订单列表",
+    component: () => import("@/views/admin/order/index.vue"),
+    meta: { title: "订单列表" },
+    hidden: false,
+  },
+  "/admin/order/deviceNotify": {
+    name: "设备推送",
+    component: () => import("@/views/admin/order/deviceNotify.vue"),
+    meta: { title: "设备推送" },
+    hidden: false,
+  },
+  "/channel/bank": {
+    meta: { title: "银行管理", icon: "HomeFilled" },
+    hidden: false,
+  },
+  "/channel/bank/user": {
+    name: "银行户名",
+    component: () => import("@/views/channel/bank/user.vue"),
+    meta: { title: "银行户名" },
+    hidden: false,
+  },
+  "/channel/bank/cards": {
+    name: "银行卡片",
+    component: () => import("@/views/channel/bank/cards.vue"),
+    meta: { title: "银行卡片" },
+    hidden: false,
+  },
+  "/channel/device": {
+    meta: { title: "设备管理", icon: "Connection" },
+    hidden: false,
+  },
+  "/channel/device/notifyQrcode": {
+    name: "通知推送",
+    component: () => import("@/views/channel/device/notifyQrcode.vue"),
+    meta: { title: "通知推送" },
+    hidden: false,
+  },
+  "/channel/order": {
+    meta: { title: "订单管理", icon: "Coin" },
+    hidden: false,
+  },
+  "/channel/order/index": {
+    name: "订单列表",
+    component: () => import("@/views/channel/order/index.vue"),
+    meta: { title: "订单列表" },
+    hidden: false,
+  },
+  "/merchant/order": {
+    meta: { title: "订单管理", icon: "Coin" },
+    hidden: false,
+  },
+  "/merchant/order/index": {
+    name: "订单列表",
+    component: () => import("@/views/merchant/order/index.vue"),
+    meta: { title: "订单列表" },
+    hidden: false,
+  },
+
   "/admin/system": {
     meta: { title: "系统", icon: "Setting" },
     hidden: false,

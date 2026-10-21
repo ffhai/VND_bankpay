@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <div class="balance-card">
       <span class="balance-label">我的余额</span>
-      <span class="balance-value">￥{{ formatFen(balance) }}</span>
+      <span class="balance-value">{{ formatAmount(balance) }}</span>
     </div>
 
     <div class="search-block">
@@ -32,16 +32,16 @@
     <div class="data-list">
       <el-table v-loading="loading" :data="items" style="width: 100%" empty-text="暂无数据">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="变动金额(元)" width="140" align="right">
+        <el-table-column label="变动金额" width="140" align="right">
           <template #default="scope">
             <span :class="scope.row.change_amount > 0 ? 'amount-in' : 'amount-out'">
-              {{ formatFen(scope.row.change_amount) }}
+              {{ formatAmount(scope.row.change_amount) }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="变动后余额(元)" width="140" align="right">
+        <el-table-column label="变动后余额" width="140" align="right">
           <template #default="scope">
-            {{ formatFen(scope.row.balance_after) }}
+            {{ formatAmount(scope.row.balance_after) }}
           </template>
         </el-table-column>
         <el-table-column prop="type_name" label="类型" width="100" />
@@ -68,7 +68,7 @@ import balanceApi from "@/api/user/balance";
 import CrudPagination from "@/components/CrudPagination/index.vue";
 import { useTableList } from "@/composables/useTableList";
 import { useBalanceTypes } from "@/composables/useBalanceTypes";
-import { formatFen } from "@/utils/format";
+import { formatAmount } from "@/utils/format";
 
 // 该页分页选项比后台列表略少
 const pageSizes = [20, 50, 100, 200];

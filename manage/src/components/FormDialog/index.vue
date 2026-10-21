@@ -8,7 +8,13 @@
   >
     <el-form ref="formRef" :model="form" :rules="rules" :label-width="labelWidth">
       <el-row :gutter="gutter">
-        <el-col v-for="field in visibleFields" :key="field.prop" :span="field.span ?? 24">
+        <el-col
+          v-for="field in visibleFields"
+          :key="field.prop"
+          :span="field.span ?? 24"
+          :xs="field.xs ?? 24"
+          :sm="field.span ?? 24"
+        >
           <el-form-item :label="field.label" :prop="field.prop">
             <slot
               :name="field.slot || field.prop"
@@ -142,3 +148,11 @@ const onSubmit = async () => {
 
 defineExpose({ formRef });
 </script>
+
+<style scoped>
+.el-select,
+.el-input-number,
+.el-tree-select {
+  width: 100%;
+}
+</style>

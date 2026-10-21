@@ -1,0 +1,1 @@
+nohup python3 -u notify.py >> notify.log 2>&1 &

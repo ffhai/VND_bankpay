@@ -36,9 +36,9 @@
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="role_name" label="角色" width="80" />
         <el-table-column prop="username" label="账号" />
-        <el-table-column label="余额(元)" width="120" align="right">
+        <el-table-column label="余额" width="120" align="right">
           <template #default="scope">
-            {{ formatFen(scope.row.balance) }}
+            {{ formatAmount(scope.row.balance) }}
           </template>
         </el-table-column>
         <el-table-column prop="create_time" label="创建时间" width="160" />
@@ -83,12 +83,12 @@
         <el-form-item label="变动金额" label-width="80px" prop="amount">
           <el-input-number
             v-model="adjustForm.amount"
-            :precision="2"
+            :precision="0"
             :min="-1000000"
             :max="1000000"
             :step="1"
             style="width: 100%"
-            placeholder="正数增加，负数扣减（单位：元）"
+            placeholder="正数增加，负数扣减（整数）"
           />
         </el-form-item>
         <el-form-item label="交易类型" label-width="80px">
@@ -115,7 +115,7 @@ import FormDialog from "@/components/FormDialog/index.vue";
 import CrudPagination from "@/components/CrudPagination/index.vue";
 import { useTableList } from "@/composables/useTableList";
 import { useBalanceTypes } from "@/composables/useBalanceTypes";
-import { formatFen } from "@/utils/format";
+import { formatAmount } from "@/utils/format";
 
 const {
   loading,
@@ -235,8 +235,12 @@ const onAdjust = async () => {
   const valid = await adjustFormRef.value.validate().catch(() => false);
   if (!valid) return;
 
-  // 元 -> 分（整数）
-  const changeAmount = Math.round(Number(adjustForm.value.amount) * 100);
+  // 直接提交整数金额，不做单位换算
+  const changeAmount = Number(adjustForm.value.amount);
+  if (!Number.isSafeInteger(changeAmount)) {
+    ElMessage.warning("金额必须为整数");
+    return;
+  }
   if (changeAmount === 0) {
     ElMessage.warning("变动金额不能为0");
     return;

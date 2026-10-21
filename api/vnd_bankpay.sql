@@ -5,13 +5,13 @@
  Source Server Type    : MySQL
  Source Server Version : 50726
  Source Host           : 127.0.0.1:3306
- Source Schema         : dbdata
+ Source Schema         : vnd_bankpay
 
  Target Server Type    : MySQL
  Target Server Version : 50726
  File Encoding         : 65001
 
- Date: 20/10/2026 10:46:38
+ Date: 21/10/2026 22:34:25
 */
 
 SET NAMES utf8mb4;
@@ -33,12 +33,14 @@ CREATE TABLE `dt_app_list`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `appid`(`appid`) USING BTREE,
   INDEX `idx_create_time`(`create_time`) USING BTREE COMMENT '创建时间区间筛选'
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '应用接口' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '应用接口' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_app_list
 -- ----------------------------
 INSERT INTO `dt_app_list` VALUES (1, 1, 'admin', '1d3gweoqpnqyjponpzovna', 1, '', 1782270416, 1792075267);
+INSERT INTO `dt_app_list` VALUES (2, 3, 'test_merchant', 'm3vokxdps98e34jwwzhy5', 1, '', 1792586694, 1792586694);
+INSERT INTO `dt_app_list` VALUES (3, 31, 'test_channel', 'pg1e9bgysbiexgd69kvgn', 1, '', 1792591285, 1792591285);
 
 -- ----------------------------
 -- Table structure for dt_balance_log
@@ -47,8 +49,8 @@ DROP TABLE IF EXISTS `dt_balance_log`;
 CREATE TABLE `dt_balance_log`  (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `user_id` int(11) NOT NULL DEFAULT 0 COMMENT '用户ID',
-  `change_amount` bigint(20) NOT NULL DEFAULT 0 COMMENT '变动金额(分，可为负)',
-  `balance_after` bigint(20) NOT NULL DEFAULT 0 COMMENT '变动后余额(分)',
+  `change_amount` bigint(20) NOT NULL DEFAULT 0 COMMENT '变动金额(整数，可为负)',
+  `balance_after` bigint(20) NOT NULL DEFAULT 0 COMMENT '变动后余额(整数)',
   `type` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '交易类型',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '备注',
   `operator` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '操作员',
@@ -56,7 +58,7 @@ CREATE TABLE `dt_balance_log`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_create_time`(`create_time`) USING BTREE COMMENT '时间索引',
   INDEX `idx_user_time`(`user_id`, `create_time`) USING BTREE COMMENT '用户+时间组合索引(按用户查流水并排序)'
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '余额变动记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 59 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '余额变动记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_balance_log
@@ -64,6 +66,148 @@ CREATE TABLE `dt_balance_log`  (
 INSERT INTO `dt_balance_log` VALUES (1, 1, 10000, 10000, 'adjust', 'test', 'admin', 1791908719);
 INSERT INTO `dt_balance_log` VALUES (4, 3, 10000, 10000, 'recharge', '', 'admin', 1791909561);
 INSERT INTO `dt_balance_log` VALUES (5, 3, -2000, 8000, 'adjust', '', 'admin', 1791981103);
+INSERT INTO `dt_balance_log` VALUES (39, 31, 10000, 10000, 'recharge', '', 'admin', 1792586961);
+INSERT INTO `dt_balance_log` VALUES (48, 1, -10000, 0, 'deduct', '', 'admin', 1792587396);
+INSERT INTO `dt_balance_log` VALUES (49, 31, -100, 9900, 'CreateOrder', '442121062650515798', 'sys', 1792587986);
+INSERT INTO `dt_balance_log` VALUES (50, 31, -100, 9800, 'CreateOrder', 'SF2121114852569756', 'sys', 1792588308);
+INSERT INTO `dt_balance_log` VALUES (51, 31, -100, 9700, 'CreateOrder', 'NV2121115699575355', 'sys', 1792588316);
+INSERT INTO `dt_balance_log` VALUES (52, 31, -100, 9600, 'CreateOrder', 'KN2121122899485510', 'sys', 1792588348);
+INSERT INTO `dt_balance_log` VALUES (53, 31, -100, 9500, 'CreateOrder', 'W62121182549102481', 'sys', 1792588705);
+INSERT INTO `dt_balance_log` VALUES (54, 31, 100, 9600, 'CancelOrder', '442121062650515798', 'sys', 1792591006);
+INSERT INTO `dt_balance_log` VALUES (55, 31, 100, 9700, 'CancelOrder', 'SF2121114852569756', 'sys', 1792591006);
+INSERT INTO `dt_balance_log` VALUES (56, 31, 100, 9800, 'CancelOrder', 'NV2121115699575355', 'sys', 1792591006);
+INSERT INTO `dt_balance_log` VALUES (57, 31, 100, 9900, 'CancelOrder', 'KN2121122899485510', 'sys', 1792591006);
+INSERT INTO `dt_balance_log` VALUES (58, 31, -100, 9800, 'CreateOrder', 'ZF2122032610197529', 'sys', 1792591406);
+
+-- ----------------------------
+-- Table structure for dt_bank_cards
+-- ----------------------------
+DROP TABLE IF EXISTS `dt_bank_cards`;
+CREATE TABLE `dt_bank_cards`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(10) NULL DEFAULT 0,
+  `bank_number` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `bank_code` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `bank_user_id` int(10) NULL DEFAULT 0,
+  `balance` int(10) NULL DEFAULT 0,
+  `online_account` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '网银-账号',
+  `online_password` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '网银-密码',
+  `phone_number` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '手机号码',
+  `notify_type` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '回调方式 app/online',
+  `notify_device` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '回调设备名称',
+  `limit_in_max` int(10) NULL DEFAULT 0,
+  `limit_out_max` int(10) NULL DEFAULT 0,
+  `remark` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `status` tinyint(1) NULL DEFAULT -1,
+  `last_time` int(10) NULL DEFAULT 0,
+  `create_time` int(10) NULL DEFAULT 0,
+  `update_time` int(10) NULL DEFAULT 0,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `bank_number`(`bank_number`) USING BTREE,
+  INDEX `getOptions`(`uid`, `status`) USING BTREE,
+  INDEX `createOrder`(`limit_in_max`, `limit_out_max`, `status`) USING BTREE,
+  INDEX `createOrder1`(`bank_code`, `limit_in_max`, `limit_out_max`, `status`) USING BTREE,
+  INDEX `task_getBank`(`uid`, `online_account`, `online_password`, `phone_number`, `notify_type`, `notify_device`, `status`) USING BTREE,
+  INDEX `task_getBankIsSet`(`uid`, `notify_type`, `notify_device`, `status`) USING BTREE
+) ENGINE = MyISAM AUTO_INCREMENT = 15 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of dt_bank_cards
+-- ----------------------------
+INSERT INTO `dt_bank_cards` VALUES (10, 31, '1035664310', 'VCB', 10, 0, '', '', '', 'online', '', 0, 0, '', 1, 0, 1792587971, 1792588696);
+
+-- ----------------------------
+-- Table structure for dt_bank_user
+-- ----------------------------
+DROP TABLE IF EXISTS `dt_bank_user`;
+CREATE TABLE `dt_bank_user`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(10) NULL DEFAULT 0,
+  `name` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `idcard` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+  `remark` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `status` tinyint(1) NULL DEFAULT -1,
+  `create_time` int(10) NULL DEFAULT 0,
+  `update_time` int(10) NULL DEFAULT 0,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idcard`(`idcard`, `uid`) USING BTREE,
+  INDEX `getOptions`(`uid`, `status`) USING BTREE
+) ENGINE = MyISAM AUTO_INCREMENT = 13 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of dt_bank_user
+-- ----------------------------
+INSERT INTO `dt_bank_user` VALUES (10, 31, 'VO THI TUYET HONG', '11223344', '', 1, 1792587590, 1792587865);
+
+-- ----------------------------
+-- Table structure for dt_banks
+-- ----------------------------
+DROP TABLE IF EXISTS `dt_banks`;
+CREATE TABLE `dt_banks`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '',
+  `code` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `bin` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+  `logo` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+  `short_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '',
+  `swift_code` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `status` tinyint(1) NULL DEFAULT -1,
+  `status_in` tinyint(1) NULL DEFAULT -1,
+  `status_out` tinyint(1) NULL DEFAULT -1,
+  `create_time` int(10) NULL DEFAULT 0,
+  `update_time` int(10) NULL DEFAULT 0,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `bin`(`bin`) USING BTREE,
+  UNIQUE INDEX `code`(`code`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 45 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of dt_banks
+-- ----------------------------
+INSERT INTO `dt_banks` VALUES (1, 'Ngân hàng TMCP Công thương Việt Nam', 'ICB', '970415', 'https://cdn.vietqr.io/img/ICB.png', 'VietinBank', 'ICBVVNVX', 1, 1, 1, 0, 1790992102);
+INSERT INTO `dt_banks` VALUES (2, 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'VCB', '970436', 'https://cdn.vietqr.io/img/VCB.png', 'Vietcombank', 'BFTVVNVX', 1, 1, -1, 0, 1790992136);
+INSERT INTO `dt_banks` VALUES (3, 'Ngân hàng TMCP Đầu tư và Phát triển Việt Nam', 'BIDV', '970418', 'https://cdn.vietqr.io/img/BIDV.png', 'BIDV', 'BIDVVNVX', 1, -1, 1, 0, 1790992152);
+INSERT INTO `dt_banks` VALUES (4, 'Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam', 'VBA', '970405', 'https://cdn.vietqr.io/img/VBA.png', 'Agribank', 'VBAAVNVX', 1, 1, 1, 0, 1790992158);
+INSERT INTO `dt_banks` VALUES (5, 'Ngân hàng TMCP Phương Đông', 'OCB', '970448', 'https://cdn.vietqr.io/img/OCB.png', 'OCB', 'ORCOVNVX', -1, 1, 1, 0, 1790992168);
+INSERT INTO `dt_banks` VALUES (6, 'Ngân hàng TMCP Quân đội', 'MB', '970422', 'https://cdn.vietqr.io/img/MB.png', 'MBBank', 'MSCBVNVX', 1, 1, 1, 0, 1790992174);
+INSERT INTO `dt_banks` VALUES (7, 'Ngân hàng TMCP Kỹ thương Việt Nam', 'TCB', '970407', 'https://cdn.vietqr.io/img/TCB.png', 'Techcombank', 'VTCBVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (8, 'Ngân hàng TMCP Á Châu', 'ACB', '970416', 'https://cdn.vietqr.io/img/ACB.png', 'ACB', 'ASCBVNVX', 1, 1, 1, 0, 1790994645);
+INSERT INTO `dt_banks` VALUES (9, 'Ngân hàng TMCP Việt Nam Thịnh Vượng', 'VPB', '970432', 'https://cdn.vietqr.io/img/VPB.png', 'VPBank', 'VPBKVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (10, 'Ngân hàng TMCP Tiên Phong', 'TPB', '970423', 'https://cdn.vietqr.io/img/TPB.png', 'TPBank', 'TPBVVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (11, 'Ngân hàng TMCP Sài Gòn Thương Tín', 'STB', '970403', 'https://cdn.vietqr.io/img/STB.png', 'Sacombank', 'SGTTVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (12, 'Ngân hàng TMCP Phát triển Thành phố Hồ Chí Minh', 'HDB', '970437', 'https://cdn.vietqr.io/img/HDB.png', 'HDBank', 'HDBCVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (13, 'Ngân hàng TMCP Bản Việt', 'VCCB', '970454', 'https://cdn.vietqr.io/img/VCCB.png', 'VietCapitalBank', 'VCBCVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (14, 'Ngân hàng TMCP Sài Gòn', 'SCB', '970429', 'https://cdn.vietqr.io/img/SCB.png', 'SCB', 'SACLVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (15, 'Ngân hàng TMCP Quốc tế Việt Nam', 'VIB', '970441', 'https://cdn.vietqr.io/img/VIB.png', 'VIB', 'VNIBVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (16, 'Ngân hàng TMCP Sài Gòn - Hà Nội', 'SHB', '970443', 'https://cdn.vietqr.io/img/SHB.png', 'SHB', 'SHBAVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (17, 'Ngân hàng TMCP Xuất Nhập khẩu Việt Nam', 'EIB', '970431', 'https://cdn.vietqr.io/img/EIB.png', 'Eximbank', 'EBVIVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (18, 'Ngân hàng TMCP Hàng Hải Việt Nam', 'MSB', '970426', 'https://cdn.vietqr.io/img/MSB.png', 'MSB', 'MCOBVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (19, 'Ngân hàng TMCP Sài Gòn Công Thương', 'SGICB', '970400', 'https://cdn.vietqr.io/img/SGICB.png', 'SaigonBank', 'SBITVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (20, 'Ngân hàng TMCP Bắc Á', 'BAB', '970409', 'https://cdn.vietqr.io/img/BAB.png', 'BacABank', 'NASCVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (21, 'Ngân hàng TMCP Đại Chúng Việt Nam Ngân hàng số', 'PVDB', '971133', 'https://cdn.vietqr.io/img/PVCB.png', 'PVcomBank Pay', 'WBVNVNVX', 1, -1, -1, 0, 1790991989);
+INSERT INTO `dt_banks` VALUES (22, 'Ngân hàng TMCP Đại Chúng Việt Nam', 'PVCB', '970412', 'https://cdn.vietqr.io/img/PVCB.png', 'PVcomBank', 'WBVNVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (23, 'Ngân hàng TNHH MTV Việt Nam Hiện Đại', 'MBV', '970414', 'https://cdn.vietqr.io/img/MBV.png', 'MBV', 'OCBKUS3M', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (24, 'Ngân hàng TMCP Quốc Dân', 'NCB', '970419', 'https://cdn.vietqr.io/img/NCB.png', 'NCB', 'NVBAVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (25, 'Ngân hàng TNHH MTV Shinhan Việt Nam', 'SHBVN', '970424', 'https://cdn.vietqr.io/img/SHBVN.png', 'ShinhanBank', 'SHBKVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (26, 'Ngân hàng TMCP An Bình', 'ABB', '970425', 'https://cdn.vietqr.io/img/ABB.png', 'ABBANK', 'ABBKVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (27, 'Ngân hàng TMCP Việt Á', 'VAB', '970427', 'https://cdn.vietqr.io/img/VAB.png', 'VietABank', 'VNACVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (28, 'Ngân hàng TMCP Nam Á', 'NAB', '970428', 'https://cdn.vietqr.io/img/NAB.png', 'NamABank', 'NAMAVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (29, 'Ngân hàng TMCP Thịnh vượng và Phát triển', 'PGB', '970430', 'https://cdn.vietqr.io/img/PGB.png', 'PGBank', 'PGBLVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (30, 'Ngân hàng TMCP Việt Nam Thương Tín', 'VIETBANK', '970433', 'https://cdn.vietqr.io/img/VIETBANK.png', 'VietBank', 'VNTTVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (31, 'Ngân hàng TMCP Bảo Việt', 'BVB', '970438', 'https://cdn.vietqr.io/img/BVB.png', 'BaoVietBank', 'BVBVVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (32, 'Ngân hàng TMCP Đông Nam Á', 'SEAB', '970440', 'https://cdn.vietqr.io/img/SEAB.png', 'SeABank', 'SEAVVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (33, 'Ngân hàng TMCP Lộc Phát Việt Nam', 'LPB', '970449', 'https://cdn.vietqr.io/img/LPB.png', 'LPBank', 'LVBKVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (34, 'Ngân hàng TMCP Kiên Long', 'KLB', '970452', 'https://cdn.vietqr.io/img/KLB.png', 'KienLongBank', 'KLBKVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (35, 'Ngân hàng Đại chúng TNHH Kasikornbank', 'KBank', '668888', 'https://cdn.vietqr.io/img/KBANK.png', 'KBank', 'KASIVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (36, 'Ngân hàng TNHH MTV Hong Leong Việt Nam', 'HLBVN', '970442', 'https://cdn.vietqr.io/img/HLBVN.png', 'HongLeong', 'HLBBVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (37, 'Ngân hàng Thương mại TNHH MTV Xây dựng Việt Nam', 'CBB', '970444', 'https://cdn.vietqr.io/img/CBB.png', 'CBBank', 'GTBAVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (38, 'Ngân hàng TNHH MTV CIMB Việt Nam', 'CIMB', '422589', 'https://cdn.vietqr.io/img/CIMB.png', 'CIMB', 'CIBBVNVN', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (39, 'DBS Bank Ltd - Chi nhánh Thành phố Hồ Chí Minh', 'DBS', '796500', 'https://cdn.vietqr.io/img/DBS.png', 'DBSBank', 'DBSSVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (40, 'Ngân hàng TNHH MTV Số Vikki', 'Vikki', '970406', 'https://cdn.vietqr.io/img/Vikki.png', 'Vikki', 'EACBVNVX', 1, 1, -1, 0, 1791444647);
+INSERT INTO `dt_banks` VALUES (41, 'Ngân hàng Thương mại TNHH MTV Dầu Khí Toàn Cầu', 'GPB', '970408', 'https://cdn.vietqr.io/img/GPB.png', 'GPBank', 'GBNKVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (42, 'Ngân hàng TNHH MTV HSBC (Việt Nam)', 'HSBC', '458761', 'https://cdn.vietqr.io/img/HSBC.png', 'HSBC', 'HSBCVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (43, 'Ngân hàng TNHH MTV Standard Chartered Bank Việt Nam', 'SCVN', '970410', 'https://cdn.vietqr.io/img/SCVN.png', 'StandardChartered', 'SCBLVNVX', -1, -1, -1, 0, 0);
+INSERT INTO `dt_banks` VALUES (44, 'Ngân hàng TNHH MTV Public Việt Nam', 'PBVN', '970439', 'https://cdn.vietqr.io/img/PBVN.png', 'PublicBank', 'VIDPVNVX', -1, -1, -1, 0, 0);
 
 -- ----------------------------
 -- Table structure for dt_config
@@ -119,6 +263,27 @@ INSERT INTO `dt_config_group` VALUES (1, '系统', 9999, 1, 1789522790, 17910985
 INSERT INTO `dt_config_group` VALUES (2, '用户', 0, -1, 1789525592, 1792115153);
 
 -- ----------------------------
+-- Table structure for dt_device_notify
+-- ----------------------------
+DROP TABLE IF EXISTS `dt_device_notify`;
+CREATE TABLE `dt_device_notify`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(10) NULL DEFAULT 0,
+  `type` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `phone_number` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
+  `card_number` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `balance` int(10) NULL DEFAULT 0,
+  `sms_code` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `remark` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `order_id` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `time` int(10) NULL DEFAULT 0,
+  `status` tinyint(1) NULL DEFAULT 0,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `task_online_smscode`(`uid`, `type`, `phone_number`, `time`) USING BTREE
+) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
 -- Table structure for dt_editor
 -- ----------------------------
 DROP TABLE IF EXISTS `dt_editor`;
@@ -151,7 +316,7 @@ CREATE TABLE `dt_login_log`  (
   `ip` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT 'IPv4/IPv6',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_uid_time`(`uid`, `time`) USING BTREE COMMENT '按用户+时间查登录记录'
-) ENGINE = InnoDB AUTO_INCREMENT = 157 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '登录记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 160 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '登录记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_login_log
@@ -303,6 +468,73 @@ INSERT INTO `dt_login_log` VALUES (152, 1, '', 1792079433, 1, '', '127.0.0.1');
 INSERT INTO `dt_login_log` VALUES (154, 1, '', 1792079931, 1, '', '127.0.0.1');
 INSERT INTO `dt_login_log` VALUES (155, 1, '', 1792079967, 1, '', '127.0.0.1');
 INSERT INTO `dt_login_log` VALUES (156, 1, '', 1792080445, 1, '', '127.0.0.1');
+INSERT INTO `dt_login_log` VALUES (157, 1, '', 1792583310, 1, '', '127.0.0.1');
+INSERT INTO `dt_login_log` VALUES (158, 31, '', 1792586738, 1, '', '127.0.0.1');
+INSERT INTO `dt_login_log` VALUES (159, 3, '', 1792587263, 1, '', '127.0.0.1');
+
+-- ----------------------------
+-- Table structure for dt_order
+-- ----------------------------
+DROP TABLE IF EXISTS `dt_order`;
+CREATE TABLE `dt_order`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '系统订单号',
+  `trade_no` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '商户订单号',
+  `trade_uid` int(10) NULL DEFAULT 0,
+  `pay_type` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `channel_uid` int(10) NULL DEFAULT 0,
+  `bank_number` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '0' COMMENT '银行卡号码',
+  `amount` int(10) NULL DEFAULT 0 COMMENT '金额 整数',
+  `ps` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '附言',
+  `status` tinyint(1) NULL DEFAULT 1,
+  `notify_status` tinyint(1) NULL DEFAULT 1,
+  `notify_time` int(10) NULL DEFAULT 0,
+  `notify_url` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `return_url` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `create_time` int(10) NULL DEFAULT 0,
+  `expire_time` int(10) NULL DEFAULT 0,
+  `pay_time` int(10) NULL DEFAULT 0,
+  `settlement_time` int(10) NULL DEFAULT 0 COMMENT '结算时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `order_id`(`order_id`) USING BTREE,
+  UNIQUE INDEX `trade_no`(`trade_no`, `trade_uid`) USING BTREE,
+  UNIQUE INDEX `ps`(`ps`) USING BTREE,
+  INDEX `settlement`(`status`, `settlement_time`, `pay_time`) USING BTREE,
+  INDEX `pendding1`(`bank_number`, `amount`) USING BTREE,
+  INDEX `sumBankCards`(`bank_number`, `status`, `create_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of dt_order
+-- ----------------------------
+INSERT INTO `dt_order` VALUES (19, '442121062650515798', '1792587986', 3, 'bank2bank', 31, '1035664310', 100, 'F3JMSP0U', -1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792587986, 1792588586, 0, 0);
+INSERT INTO `dt_order` VALUES (20, 'SF2121114852569756', '1792588308', 3, 'bank2bank', 31, '1035664 310', 100, 'U7ES83XZ', -1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792588308, 1792588908, 0, 0);
+INSERT INTO `dt_order` VALUES (21, 'NV2121115699575355', '1792588316', 3, 'bank2bank', 31, '1035664 310', 100, 'KSRL34BE', -1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792588316, 1792588916, 0, 0);
+INSERT INTO `dt_order` VALUES (22, 'KN2121122899485510', '1792588347', 3, 'bank2bank', 31, '1035664 310', 100, 'MCRJVX19', -1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792588348, 1792588948, 0, 0);
+INSERT INTO `dt_order` VALUES (23, 'W62121182549102481', '1792588705', 3, 'bank2bank', 31, '1035664310', 100, 'LAYWOET7', 2, 2, 1792591426, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792588705, 1792589305, 1792591013, 0);
+INSERT INTO `dt_order` VALUES (24, 'ZF2122032610197529', '1792591406', 3, 'bank2bank', 31, '1035664310', 100, '2O9P0B5Z', 1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792591406, 1792592006, 0, 0);
+
+-- ----------------------------
+-- Table structure for dt_pay_type
+-- ----------------------------
+DROP TABLE IF EXISTS `dt_pay_type`;
+CREATE TABLE `dt_pay_type`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `status` tinyint(1) NULL DEFAULT 1,
+  `expire_time` int(10) NULL DEFAULT 0,
+  `remark` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
+  `create_time` int(10) NULL DEFAULT 0,
+  `update_time` int(10) NULL DEFAULT 0,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `code`(`code`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci COMMENT = '通道' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of dt_pay_type
+-- ----------------------------
+INSERT INTO `dt_pay_type` VALUES (1, 'bank2bank', '卡转卡', 1, 600, '', 1792585801, 1792585801);
 
 -- ----------------------------
 -- Table structure for dt_perms
@@ -327,7 +559,7 @@ CREATE TABLE `dt_perms`  (
   UNIQUE INDEX `uk_route_path`(`route_path`) USING BTREE,
   INDEX `idx_module_controller_action`(`module`, `controller`, `action`) USING BTREE COMMENT '模块控制器方法组合索引',
   INDEX `idx_parent_sort`(`parent_id`, `sort`) USING BTREE COMMENT '父级+排序(菜单树/级联删除)'
-) ENGINE = InnoDB AUTO_INCREMENT = 78 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 167 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_perms
@@ -385,13 +617,89 @@ INSERT INTO `dt_perms` VALUES (55, 54, '余额信息', 'action', 'user.balance.i
 INSERT INTO `dt_perms` VALUES (56, 54, '交易记录', 'action', 'user.balance.items', NULL, 'user', 'Balance', 'items', 0, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (57, 29, '调整余额', 'action', 'admin.member.adjust', NULL, 'admin', 'Member', 'adjust', 0, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (58, 2, '清理缓存', 'action', 'admin.config.clearcache', NULL, 'admin', 'Config', 'clearCache', 0, 1, 1791938366, 1791938366);
-INSERT INTO `dt_perms` VALUES (71, 0, '开放接口', 'group', NULL, NULL, '', '', '', 0, 1, 0, 0);
-INSERT INTO `dt_perms` VALUES (72, 71, '接口连通性检查', 'api', 'openapi.index.ping', NULL, 'openapi', 'Index', 'ping', 10, 1, 0, 0);
-INSERT INTO `dt_perms` VALUES (73, 71, '获取任务', 'api', 'task.api.get_task', NULL, 'task', 'Api', 'getTask', 20, 1, 0, 0);
-INSERT INTO `dt_perms` VALUES (74, 71, '提交任务报告', 'api', 'task.api.set_report', NULL, 'task', 'Api', 'setReport', 30, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (75, 1, '文件管理', 'page', NULL, '/admin/system/upload', 'admin', 'Upload', '', 10, 1, 1792464189, 1792464265);
 INSERT INTO `dt_perms` VALUES (76, 75, '列表', 'action', 'admin.upload.items', NULL, 'admin', 'Upload', 'items', 0, 1, 1792464189, 1792464189);
 INSERT INTO `dt_perms` VALUES (77, 75, '删除', 'action', 'admin.upload.del', NULL, 'admin', 'Upload', 'del', 0, 1, 1792464189, 1792464189);
+INSERT INTO `dt_perms` VALUES (78, 0, '银行管理', 'group', NULL, '/admin/bank', 'admin', '', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (79, 78, '银行列表', 'page', NULL, '/admin/bank/index', 'admin', 'Banks', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (80, 79, '列表', 'action', 'admin.banks.items', NULL, 'admin', 'Banks', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (81, 79, '新增', 'action', 'admin.banks.add', NULL, 'admin', 'Banks', 'add', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (82, 79, '编辑', 'action', 'admin.banks.edit', NULL, 'admin', 'Banks', 'edit', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (83, 79, '删除', 'action', 'admin.banks.del', NULL, 'admin', 'Banks', 'del', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (84, 78, '银行户名', 'page', NULL, '/admin/bank/user', 'admin', 'BankUser', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (85, 84, '列表', 'action', 'admin.bankuser.items', NULL, 'admin', 'BankUser', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (87, 84, '编辑', 'action', 'admin.bankuser.edit', NULL, 'admin', 'BankUser', 'edit', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (88, 84, '删除', 'action', 'admin.bankuser.del', NULL, 'admin', 'BankUser', 'del', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (89, 79, 'getOptions', 'api', 'admin.banks.getoptions', NULL, 'admin', 'Banks', 'getOptions', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (90, 84, 'getOptions', 'api', 'admin.bankuser.getoptions', NULL, 'admin', 'BankUser', 'getOptions', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (91, 78, '银行卡号', 'page', NULL, '/admin/bank/cards', 'admin', 'BankCards', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (92, 91, '列表', 'action', 'admin.bankcards.items', NULL, 'admin', 'BankCards', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (94, 91, '编辑', 'action', 'admin.bankcards.edit', NULL, 'admin', 'BankCards', 'edit', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (95, 91, '删除', 'action', 'admin.bankcards.del', NULL, 'admin', 'BankCards', 'del', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (96, 0, '码商银行管理', 'group', NULL, '/channel/bank', 'channel', '', '', 1000, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (97, 96, '银行户名', 'page', NULL, '/channel/bank/user', 'channel', 'BankUser', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (98, 97, '列表', 'action', 'channel.bankuser.items', NULL, 'channel', 'BankUser', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (99, 97, '新增', 'action', 'channel.bankuser.add', NULL, 'channel', 'BankUser', 'add', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (100, 97, '编辑', 'action', 'channel.bankuser.edit', NULL, 'channel', 'BankUser', 'edit', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (101, 97, '删除', 'action', 'channel.bankuser.del', NULL, 'channel', 'BankUser', 'del', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (102, 96, '银行卡号', 'page', NULL, '/channel/bank/cards', 'channel', 'BankCards', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (103, 102, '列表', 'action', 'channel.bankcards.items', NULL, 'channel', 'BankCards', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (104, 102, '新增', 'action', 'channel.bankcards.add', NULL, 'channel', 'BankCards', 'add', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (105, 102, '编辑', 'action', 'channel.bankcards.edit', NULL, 'channel', 'BankCards', 'edit', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (106, 102, '删除', 'action', 'channel.bankcards.del', NULL, 'channel', 'BankCards', 'del', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (107, 97, 'getOptions', 'api', 'channel.bankuser.getoptions', NULL, 'channel', 'BankUser', 'getOptions', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (108, 102, 'getOptions', 'api', 'channel.bankcards.getoptions', NULL, 'channel', 'BankCards', 'getOptions', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (109, 96, '银行列表', 'group', NULL, NULL, 'channel', 'Banks', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (110, 109, 'getOptions', 'api', 'channel.banks.getoptions', NULL, 'channel', 'Banks', 'getOptions', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (111, 0, '码商设备管理', 'group', NULL, '/channel/device', 'channel', '', '', 1999, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (112, 111, '通知推送', 'page', NULL, '/channel/device/notifyQrcode', 'channel', 'Device', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (113, 112, 'getNotifyQrcode', 'action', 'channel.device.getnotifyqrcode', NULL, 'channel', 'Device', 'getNotifyQrcode', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (114, 0, '订单管理', 'group', NULL, '/admin/order', 'admin', '', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (115, 114, '支付方式', 'page', NULL, '/admin/order/payType', 'admin', 'PayType', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (116, 115, '列表', 'action', 'admin.paytype.items', NULL, 'admin', 'PayType', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (117, 115, '新增', 'action', 'admin.paytype.add', NULL, 'admin', 'PayType', 'add', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (118, 115, '编辑', 'action', 'admin.paytype.edit', NULL, 'admin', 'PayType', 'edit', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (119, 115, '删除', 'action', 'admin.paytype.del', NULL, 'admin', 'PayType', 'del', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (120, 115, 'getOptions', 'api', 'admin.paytype.getoptions', NULL, 'admin', 'PayType', 'getOptions', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (121, 0, 'OpenApi', 'group', NULL, NULL, 'openapi', '', '', 9999, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (122, 121, 'Order', 'group', NULL, NULL, 'openapi', 'Order', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (123, 122, 'create', 'api', 'openapi.Order.create_order', NULL, 'openapi', 'Order', 'create', 0, 1, 1792585801, 1792588297);
+INSERT INTO `dt_perms` VALUES (124, 122, 'query', 'api', 'openapi.Order.query', NULL, 'openapi', 'Order', 'query', 0, 1, 1792585801, 1792588289);
+INSERT INTO `dt_perms` VALUES (125, 114, '订单列表', 'page', NULL, '/admin/order/index', 'admin', 'Order', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (126, 125, '列表', 'action', 'admin.order.items', NULL, 'admin', 'Order', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (127, 125, '确认订单', 'action', 'admin.order.confirmed', NULL, 'admin', 'Order', 'confirmed', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (128, 125, '回调', 'action', 'admin.order.notify', NULL, 'admin', 'Order', 'notify', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (129, 125, '删除', 'action', 'admin.order.del', NULL, 'admin', 'Order', 'del', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (130, 122, 'banks', 'api', 'openapi.order.banks', NULL, 'openapi', 'Order', 'banks', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (131, 0, '码商订单管理', 'group', NULL, '/channel/order', 'channel', '', '', 1001, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (132, 131, '订单列表', 'page', NULL, '/channel/order/index', 'channel', 'Order', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (133, 132, '列表', 'action', 'channel.order.items', NULL, 'channel', 'Order', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (134, 132, '确认订单', 'action', 'channel.order.confirmed', NULL, 'channel', 'Order', 'confirmed', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (135, 132, '回调', 'action', 'channel.order.notify', NULL, 'channel', 'Order', 'notify', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (136, 0, '商户订单管理', 'group', NULL, '/merchant/order', 'merchant', '', '', 2000, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (137, 136, '订单列表', 'page', NULL, '/merchant/order/index', 'merchant', 'Order', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (138, 137, '列表', 'action', 'merchant.order.items', NULL, 'merchant', 'Order', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (139, 137, '回调', 'action', 'merchant.order.notify', NULL, 'merchant', 'Order', 'notify', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (146, 0, 'Task', 'group', NULL, NULL, 'task', '', '', 9999, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (147, 146, 'Notify', 'group', NULL, NULL, 'task', 'Notify', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (148, 147, 'add', 'api', 'task.notify.add', NULL, 'task', 'Notify', 'add', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (149, 147, 'getPending', 'api', 'task.notify.getpending', NULL, 'task', 'Notify', 'getPending', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (150, 146, 'API', 'group', NULL, NULL, 'task', 'Api', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (151, 150, 'getNotifyTask', 'api', 'task.api.getnotifytask', NULL, 'task', 'Api', 'getNotifyTask', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (152, 150, 'setNotifyStatus', 'api', 'task.api.setnotifystatus', NULL, 'task', 'Api', 'setNotifyStatus', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (153, 147, 'setPending', 'api', 'task.notify.setpending', NULL, 'task', 'Notify', 'setPending', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (154, 114, '设备推送', 'page', NULL, '/admin/order/deviceNotify', 'admin', 'DeviceNotify', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (155, 154, '列表', 'action', 'admin.devicenotify.items', NULL, 'admin', 'DeviceNotify', 'items', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (156, 154, '删除', 'action', 'admin.devicenotify.del', NULL, 'admin', 'DeviceNotify', 'del', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (157, 154, '重置', 'action', 'admin.devicenotify.reset', NULL, 'admin', 'DeviceNotify', 'reset', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (158, 146, 'Online', 'group', NULL, NULL, 'task', 'Online', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (159, 158, 'getBank', 'api', 'task.online.getbank', NULL, 'task', 'Online', 'getBank', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (160, 158, 'getSmsCode', 'api', 'task.online.getsmscode', NULL, 'task', 'Online', 'getSmsCode', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (161, 158, 'upTransactions', 'api', 'task.online.uptransactions', NULL, 'task', 'Online', 'upTransactions', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (162, 91, '测试VietQR', 'action', 'admin.bankcards.testvietqr', NULL, 'admin', 'BankCards', 'testVietqr', 0, 1, 1792588923, 1792588923);
+INSERT INTO `dt_perms` VALUES (163, 102, '测试VietQR', 'action', 'channel.bankcards.testvietqr', NULL, 'channel', 'BankCards', 'testVietqr', 0, 1, 1792588923, 1792588923);
+INSERT INTO `dt_perms` VALUES (165, 29, 'getChannelUserList', 'api', 'admin.Member.getChannelUserList', NULL, 'admin', 'Member', 'getChannelUserList', 0, 1, 1792592875, 1792592875);
+INSERT INTO `dt_perms` VALUES (166, 29, 'getMerchantUserList', 'api', 'admin.Member.getMerchantUserList', NULL, 'admin', 'Member', 'getMerchantUserList', 0, 1, 1792592900, 1792592900);
 
 -- ----------------------------
 -- Table structure for dt_role_perms
@@ -406,7 +714,7 @@ CREATE TABLE `dt_role_perms`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_type_perms_id`(`type`, `perms_id`) USING BTREE COMMENT '角色类型+权限ID唯一索引',
   INDEX `idx_perms_id`(`perms_id`) USING BTREE COMMENT '权限ID索引'
-) ENGINE = InnoDB AUTO_INCREMENT = 839 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1348 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_role_perms
@@ -468,6 +776,128 @@ INSERT INTO `dt_role_perms` VALUES (834, 'admin', 76, 1792464189, 1792464189);
 INSERT INTO `dt_role_perms` VALUES (835, 'super', 76, 1792464189, 1792464189);
 INSERT INTO `dt_role_perms` VALUES (836, 'admin', 77, 1792464189, 1792464189);
 INSERT INTO `dt_role_perms` VALUES (837, 'super', 77, 1792464189, 1792464189);
+INSERT INTO `dt_role_perms` VALUES (839, 'super', 78, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (840, 'admin', 78, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (841, 'super', 79, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (842, 'admin', 79, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (843, 'super', 80, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (844, 'admin', 80, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (845, 'super', 81, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (846, 'admin', 81, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (847, 'super', 82, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (848, 'admin', 82, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (849, 'super', 83, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (850, 'admin', 83, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (851, 'super', 84, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (852, 'admin', 84, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (853, 'super', 85, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (854, 'admin', 85, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (857, 'super', 87, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (858, 'admin', 87, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (859, 'super', 88, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (860, 'admin', 88, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (861, 'super', 89, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (862, 'admin', 89, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (863, 'super', 90, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (864, 'admin', 90, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (865, 'super', 91, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (866, 'admin', 91, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (867, 'super', 92, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (868, 'admin', 92, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (871, 'super', 94, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (872, 'admin', 94, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (873, 'super', 95, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (874, 'admin', 95, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (893, 'super', 114, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (894, 'admin', 114, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (895, 'super', 115, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (896, 'admin', 115, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (897, 'super', 116, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (898, 'admin', 116, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (899, 'super', 117, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (900, 'admin', 117, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (901, 'super', 118, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (902, 'admin', 118, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (903, 'super', 119, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (904, 'admin', 119, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (905, 'super', 120, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (906, 'admin', 120, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (911, 'super', 125, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (912, 'admin', 125, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (913, 'super', 126, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (914, 'admin', 126, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (915, 'super', 127, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (916, 'admin', 127, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (917, 'super', 128, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (918, 'admin', 128, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (919, 'super', 129, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (920, 'admin', 129, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (946, 'super', 154, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (947, 'admin', 154, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (948, 'super', 155, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (949, 'admin', 155, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (950, 'super', 156, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (951, 'admin', 156, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (952, 'super', 157, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (953, 'admin', 157, 1792585801, 1792585801);
+INSERT INTO `dt_role_perms` VALUES (1199, 'task', 146, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1200, 'task', 147, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1201, 'task', 148, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1202, 'task', 149, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1203, 'task', 153, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1204, 'task', 150, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1205, 'task', 151, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1206, 'task', 152, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1207, 'task', 158, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1208, 'task', 159, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1209, 'task', 160, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1210, 'task', 161, 1792586159, 1792586159);
+INSERT INTO `dt_role_perms` VALUES (1284, 'super', 162, 1792588923, 1792588923);
+INSERT INTO `dt_role_perms` VALUES (1285, 'admin', 162, 1792588923, 1792588923);
+INSERT INTO `dt_role_perms` VALUES (1303, 'channel', 53, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1304, 'channel', 54, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1305, 'channel', 55, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1306, 'channel', 56, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1307, 'channel', 120, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1308, 'channel', 96, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1309, 'channel', 97, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1310, 'channel', 98, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1311, 'channel', 99, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1312, 'channel', 100, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1313, 'channel', 101, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1314, 'channel', 107, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1315, 'channel', 102, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1316, 'channel', 103, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1317, 'channel', 104, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1318, 'channel', 105, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1319, 'channel', 106, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1320, 'channel', 108, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1321, 'channel', 163, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1322, 'channel', 109, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1323, 'channel', 110, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1324, 'channel', 131, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1325, 'channel', 132, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1326, 'channel', 133, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1327, 'channel', 134, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1328, 'channel', 135, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1329, 'channel', 111, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1330, 'channel', 112, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1331, 'channel', 113, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1332, 'channel', 148, 1792591269, 1792591269);
+INSERT INTO `dt_role_perms` VALUES (1333, 'merchant', 53, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1334, 'merchant', 54, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1335, 'merchant', 55, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1336, 'merchant', 56, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1337, 'merchant', 120, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1338, 'merchant', 136, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1339, 'merchant', 137, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1340, 'merchant', 138, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1341, 'merchant', 139, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1342, 'merchant', 121, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1343, 'merchant', 122, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1344, 'merchant', 123, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1345, 'merchant', 124, 1792591367, 1792591367);
+INSERT INTO `dt_role_perms` VALUES (1346, 'merchant', 130, 1792591367, 1792591367);
 
 -- ----------------------------
 -- Table structure for dt_roles
@@ -483,7 +913,7 @@ CREATE TABLE `dt_roles`  (
   `update_time` int(10) NOT NULL DEFAULT 0 COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_type`(`type`) USING BTREE COMMENT '角色类型唯一索引'
-) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_roles
@@ -491,6 +921,9 @@ CREATE TABLE `dt_roles`  (
 INSERT INTO `dt_roles` VALUES (1, 'super', '超管', 1, '', 1783564275, 1783579631);
 INSERT INTO `dt_roles` VALUES (2, 'admin', '管理员', 1, '', 1783564283, 1783576767);
 INSERT INTO `dt_roles` VALUES (3, 'user', '用户', 1, '', 1783578101, 1792075410);
+INSERT INTO `dt_roles` VALUES (12, 'channel', '码商', 1, '', 1792585801, 1792586768);
+INSERT INTO `dt_roles` VALUES (13, 'merchant', '商户', 1, '', 1792585801, 1792585801);
+INSERT INTO `dt_roles` VALUES (14, 'task', '任务服务', 1, '', 1792585801, 1792585801);
 
 -- ----------------------------
 -- Table structure for dt_upload
@@ -519,20 +952,21 @@ CREATE TABLE `dt_user`  (
   `nickname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '昵称',
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '头像',
-  `balance` bigint(20) NOT NULL DEFAULT 0 COMMENT '余额(分)',
+  `balance` bigint(20) NOT NULL DEFAULT 0 COMMENT '余额(整数)',
   `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态 1正常 -1停用',
   `create_time` int(10) NOT NULL DEFAULT 0,
   `update_time` int(10) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `username`(`username`) USING BTREE,
   INDEX `idx_create_time`(`create_time`) USING BTREE COMMENT '注册时间区间筛选'
-) ENGINE = InnoDB AUTO_INCREMENT = 17 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '账号表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 36 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '账号表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_user
 -- ----------------------------
-INSERT INTO `dt_user` VALUES (1, 'super', 'admin', '', '$2y$10$x0lw5xHph1Y/7t735FE1Se4O.0ZTR5ayKkJDmzryf8bL243yLCqqm', '', 10000, 1, 1652500366, 1791905409);
+INSERT INTO `dt_user` VALUES (1, 'super', 'admin', '', '$2y$10$x0lw5xHph1Y/7t735FE1Se4O.0ZTR5ayKkJDmzryf8bL243yLCqqm', '', 0, 1, 1652500366, 1791905409);
 INSERT INTO `dt_user` VALUES (2, 'admin', 'super', '', '$2y$10$qaVPRbXHo3/OXxLKgXviiuHwEJny28/nlvJpEl3Iegpt07YNzM3Tm', '', 0, 1, 1652506679, 1791905395);
-INSERT INTO `dt_user` VALUES (3, 'user', '张三', '', '$2y$10$.ypfEnribqVwP41oRiddiO2qIHaAAjOQDjHxg5RROWika0/TuJT6a', '', 8000, 1, 1791908658, 1792075267);
+INSERT INTO `dt_user` VALUES (3, 'merchant', '测试商户', '', '$2y$10$.ypfEnribqVwP41oRiddiO2qIHaAAjOQDjHxg5RROWika0/TuJT6a', '', 8000, 1, 1791908658, 1792586634);
+INSERT INTO `dt_user` VALUES (31, 'channel', '测试码商', '', '$2y$10$UH9Anz0rttdxpPM50V5UnezixQyhKluBmUuK7ij8lR/W3u3zLq23.', '', 9800, 1, 1792586732, 1792586732);
 
 SET FOREIGN_KEY_CHECKS = 1;

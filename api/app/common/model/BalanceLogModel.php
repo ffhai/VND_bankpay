@@ -13,11 +13,15 @@ class BalanceLogModel extends CommonModel
 {
     protected $name = 'balance_log';
 
+    const TYPE_ORDER_CREATE = 'CreateOrder';
+    const TYPE_ORDER_CANCEL = 'CancelOrder';
+    const TYPE_ORDER_SETTLEMENT = 'Settlement';
+
     protected $schema = [
         'id' => 'int',
         'user_id' => 'int',
-        'change_amount' => 'int', // 变动金额（分，可为负）
-        'balance_after' => 'int', // 变动后余额（分）
+        'change_amount' => 'int', // 变动金额（整数，可为负）
+        'balance_after' => 'int', // 变动后余额（整数）
         'type' => 'string',       // 交易类型
         'remark' => 'string',     // 备注
         'operator' => 'string',   // 操作员

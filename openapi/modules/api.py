@@ -1,47 +1,28 @@
-import hashlib
-import os
-import time
-from pathlib import Path
-
 from modules.httpHelper import HttpClient
+from modules.jsonHelper import JsonHelper
+import hashlib
+import time
+import urllib3
+import json
 
-ENV_FILE = Path(__file__).resolve().parents[1] / '.env'
-
-
-def _load_env_file(path: Path) -> None:
-    """极简 .env 解析（KEY=VALUE，# 注释），已存在的环境变量优先"""
-    if not path.is_file():
-        return
-    for raw_line in path.read_text(encoding='utf-8').splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith('#') or '=' not in line:
-            continue
-        key, value = line.split('=', 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
-def _required_env(name: str) -> str:
-    value = os.environ.get(name, '').strip()
-    if not value:
-        raise RuntimeError(
-            f'缺少环境变量 {name}，请复制 openapi/.env.example 为 openapi/.env 并填写'
-        )
-    return value
-
-
-_load_env_file(ENV_FILE)
-
+urllib3.disable_warnings()
 
 class Api:
-    # 凭据统一来自环境变量 / openapi/.env，不再硬编码到源码
-    BASE_URL = _required_env('OPENAPI_BASE_URL').rstrip('/')
-    APPID = _required_env('OPENAPI_APPID')
-    SECRET = _required_env('OPENAPI_SECRET')
+    base_url = ""
+    appid = ''
+    secret = ''
+
+    def __init__(self,base_url,appid,secret):
+        self.base_url = base_url
+        self.appid = appid
+        self.secret = secret
+        pass
 
     def request(self,url = '',isPost = False,post_data = {}):
         client = HttpClient(
-            base_url = self.BASE_URL,
-            default_timeout = 10
+            base_url = self.base_url,
+            default_timeout = 10,
+            verify_ssl = False
         )
         headers = {}
         post_data = self.sign(post_data)
@@ -56,27 +37,44 @@ class Api:
             return None
 
     def sign(self,params:dict):
-        params['appid'] = self.APPID
+        params['appid'] = self.appid
         params['time'] = str(int(time.time()))
-        sorted_params = "&".join([f"{k}={v}" for k, v in sorted(params.items())])
-        sorted_params += '&secret=' + self.SECRET
+        sorted_params = "&".join([f"{k}={v}" for k, v in sorted(params.items()) if v not in (None, "",0)])
+        sorted_params += '&secret=' + self.secret
         params['sign'] = hashlib.md5(sorted_params.encode('utf-8')).hexdigest()
         return params
 
 
-    def getTask(self):
-        url = '/task/api/getTask'
+    def getNotifyTask(self):
+        url = '/task/Api/getNotifyTask'
         data = {
         }
-
         req = self.request(url,True,data)
         return req
 
-    def setReport(self,task_id,data):
-        url = '/task/api/setReport'
+    def setNotifyStatus(self,order_id,status):
+        url = '/task/Api/setNotifyStatus'
         data = {
-            'task_id':task_id,
-            'data':data
+            'order_id':order_id,
+            'status':status
         }
+        req = self.request(url,True,data)
+        return req
+
+
+    def getPending(self):
+        url = '/task/Notify/getPending'
+        data = {
+        }
+        req = self.request(url,True,data)
+        return req
+
+    def setPending(self,data):
+        url = '/task/Notify/setPending'
+        req = self.request(url,True,data)
+        return req
+    
+    def addPending(self,data):
+        url = '/task/Notify/add'
         req = self.request(url,True,data)
         return req

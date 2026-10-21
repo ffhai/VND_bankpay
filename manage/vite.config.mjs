@@ -113,8 +113,6 @@ export default defineConfig({
         chunkFileNames: "js/[name]-[hash].js",
         entryFileNames: "js/[name]-[hash].js",
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split(".");
-          const ext = info[info.length - 1];
           if (/\.(png|jpe?g|gif|svg|webp|ico)$/.test(assetInfo.name)) {
             return `images/[name]-[hash].[ext]`;
           }

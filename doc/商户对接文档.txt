@@ -1,0 +1,46 @@
+支付网关：联系客服索取
+回调IP：联系客服索取
+
+公共参数：
+appid、time（10位时间戳，北京时间）、sign（签名算法）
+
+签名算法：
+将所有非空值参数按照键名排序，a=*&b=*&c=*...       后面拼接：&secret=你的secret密钥 之后MD5小写加密
+例如：amount=100&appid=c72zizgf6hn8mfbzs6gme3&notify_url=http://3.test.com/test/notify.php&pay_type=bank2bank&return_url=http://3.test.com/test/return.php&time=1791379223&trade_no=1791379223&secret=dglftg300ygyg1eg62rpzf
+md5加密：53fae4780391f87666dbf4395f470842
+
+订单状态：status（整数）
+1、待支付；2、已支付；-1：失败
+
+
+1、创建订单【POST】
+请求接口：/openapi/order/create_order
+参数：
+pay_type 支付方式，bank2bank
+amount 整数金额
+trade_no 商户订单号，不可重复
+notify_url 异步回调地址，不带参数
+return_url 异步回调地址，不带参数，选填
+bank_code 指定银行，银行列表中的code参数，选填
+返回内容：{"code":1,"msg":"获取成功","data":{"order_id":"ZV0721202456481005","pay_url":"http://3.test.com/openapi/pay/index?oid=ZV0721202456481005"}}
+
+
+2、查询订单【GET】
+请求接口：/openapi/order/query_order
+参数：order_id
+返回内容：{"appid":"c72zizgf6hn8mfbzs6gme3","order_id":"ZV0721202456481005","trade_no":"1791379223","pay_type":"bank2bank","bank_number":"111112333","amount":"100","ps":"BL1N6YSD","status":"1","pay_time":"0","time":"1791379479","sign":"a1c89e7b8ec5128984c88d489b1a8931"}}
+
+
+3、回调
+异步回调和同步回调全部采用GET请求，请求地址在商户提供的回调地址后面直接拼接 ?xxx=xxx
+例如：http://3.test.com/test/notify.php?appid=c72zizgf6hn8mfbzs6gme3&order_id=Q40720004056549897&trade_no=1791374440&pay_type=bank2bank&bank_number=111112333&amount=100&ps=RACJK3TX&status=2&pay_time=1791379041&time=1791379041&sign=2c05a60af741004d839240c534346cb9
+
+4、银行列表
+请求接口：/openapi/order/banks
+返回内容：{"code":1,"msg":"获取成功","data":[{"code":"ACB","short_name":"ACB"},{"code":"ICB","short_name":"VietinBank"},{"code":"MB","short_name":"MBBank"},{"code":"VBA","short_name":"Agribank"},{"code":"VCB","short_name":"Vietcombank"}]}
+
+说明：
+①bank_code采用文档中的银行代码列表
+②return_url同步回调，部分通道没有同步回调功能
+③notify_url 异步回调，接收成功之后必须返回字符串：success 否则会多次重复回调。
+④ 接口返回 code=1 成功，code=-1 失败，msg 为具体原因。

@@ -1,0 +1,2 @@
+php think OrderExpired 处理超时订单，建议1分钟执行一次
+php think OrderSettlement 订单结算 ，建议10分钟执行一次，结算给商户
