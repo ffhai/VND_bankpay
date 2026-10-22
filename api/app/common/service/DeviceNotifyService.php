@@ -57,9 +57,16 @@ class DeviceNotifyService extends Service
                 $data['status'] = DeviceNotifyModel::STATUS_OTHER;
             }else{
                 $orderItem = false;
-                //附言匹配
-                if(!$orderItem && strlen($data['remark']) == config('order.ps_length')){
-                    $orderItem = $orderModel->where('ps','=',$data['remark'])->field('order_id')->order('id desc')->find();
+                //金额和 附言匹配
+                if(!$orderItem && $data['balance'] > 0 && strlen($data['remark']) == config('order.ps_length')){
+                    $bankCardItem = BankCardsService::getItemByBankNumber($data['card_number']);
+                    if($bankCardItem) {
+                        $amount = $data['balance'] - $bankCardItem['balance'];
+                        $orderItem = $orderModel->where('ps','=',$data['remark'])->field('order_id')->order('id desc')->find();
+                        if($orderItem['amount'] != $amount){
+                            $orderItem = false;
+                        }
+                    }
                 }
                 //金额、卡号匹配
                 if(!$orderItem && !empty($data['card_number']) && $data['balance'] > 0){
