@@ -53,6 +53,12 @@ const routesMap = {
     meta: { title: "短信交易" },
     hidden: false,
   },
+  "/admin/device/smsCode": {
+    name: "短信验证",
+    component: () => import("@/views/admin/device/smsCode.vue"),
+    meta: { title: "短信验证" },
+    hidden: false,
+  },
   "/channel/bank": {
     meta: { title: "银行管理", icon: "HomeFilled" },
     hidden: false,

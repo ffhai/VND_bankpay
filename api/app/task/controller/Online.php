@@ -3,13 +3,11 @@ namespace app\task\controller;
 
 use app\common\enums\StatusEnum;
 use app\common\model\BankCardsModel;
-use app\common\model\DeviceNotifyModel;
+use app\common\model\SmsCodeModel;
 use app\common\model\OrderModel;
 use app\common\service\BankCardsService;
-use app\common\service\DeviceNotifyService;
 use app\common\service\OrderService;
 use app\common\utils\AjaxUtils;
-use think\App;
 use think\facade\Log;
 
 //网银
@@ -83,17 +81,15 @@ class Online extends \app\common\basics\Api
         if(empty($phone_number)){
             return AjaxUtils::error("该卡号未绑定手机号码");
         }
-        $deviceNotifyModel = new DeviceNotifyModel();
-        $deviceNotifyItem = $deviceNotifyModel
-            ->where('uid','=',$this->userItem['id'])
-            ->where('type','=',DeviceNotifyModel::TYPE_SMS_CODE)
+        $smsCode = SmsCodeModel::whereIn('notify_id', function ($query) {
+                $query->name('device_notify')->where('uid', $this->userItem['id'])->field('id');
+            })
             ->where('phone_number','=',$phone_number)
             ->where('time','>',time() - 10)
-            ->order('id desc')
-            ->field('sms_code')
-            ->find();
+            ->order('time desc,id desc')
+            ->value('verify_code');
 
-        return AjaxUtils::success(['sms_code'=>$deviceNotifyItem['sms_code'] ?? '']);
+        return AjaxUtils::success(['sms_code'=>$smsCode ?? '']);
     }
 
     public function upTransactions(){

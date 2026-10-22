@@ -67,6 +67,7 @@ class SmsTradeService extends Service
                 'remark' => $params['remark'],
                 'order_id' => $matched ? $order['order_id'] : '',
                 'status' => $matched ? StatusEnum::STATUS_1 : StatusEnum::STATUS_2,
+                'time' => (int) $notify['time'],
             ]);
             $bankCard->save(['balance' => (int) $balance, 'update_time' => time()]);
             $notify->save(['status' => StatusEnum::STATUS_2]);

@@ -11,7 +11,7 @@
  Target Server Version : 50726
  File Encoding         : 65001
 
- Date: 22/10/2026 12:51:44
+ Date: 22/10/2026 13:41:33
 */
 
 SET NAMES utf8mb4;
@@ -568,7 +568,7 @@ CREATE TABLE `dt_perms`  (
   UNIQUE INDEX `uk_route_path`(`route_path`) USING BTREE,
   INDEX `idx_module_controller_action`(`module`, `controller`, `action`) USING BTREE COMMENT '模块控制器方法组合索引',
   INDEX `idx_parent_sort`(`parent_id`, `sort`) USING BTREE COMMENT '父级+排序(菜单树/级联删除)'
-) ENGINE = InnoDB AUTO_INCREMENT = 179 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 183 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_perms
@@ -720,6 +720,10 @@ INSERT INTO `dt_perms` VALUES (175, 174, '短信交易', 'page', NULL, '/admin/d
 INSERT INTO `dt_perms` VALUES (176, 175, '查询', 'action', 'admin.smstrade.items', NULL, 'admin', 'SmsTrade', 'items', 0, 1, 1792640931, 1792640931);
 INSERT INTO `dt_perms` VALUES (177, 175, '删除', 'action', 'admin.smstrade.del', NULL, 'admin', 'SmsTrade', 'del', 0, 1, 1792640931, 1792640931);
 INSERT INTO `dt_perms` VALUES (178, 147, '接收短信交易', 'api', 'task.notify.addsmstrade', NULL, 'task', 'Notify', 'addSmsTrade', 0, 1, 1792644481, 1792644481);
+INSERT INTO `dt_perms` VALUES (179, 174, '短信验证', 'page', NULL, '/admin/device/smsCode', 'admin', 'SmsCode', '', 0, 1, 1792645149, 1792645149);
+INSERT INTO `dt_perms` VALUES (180, 179, '查询', 'action', 'admin.smscode.items', NULL, 'admin', 'SmsCode', 'items', 0, 1, 1792645149, 1792645149);
+INSERT INTO `dt_perms` VALUES (181, 179, '删除', 'action', 'admin.smscode.del', NULL, 'admin', 'SmsCode', 'del', 0, 1, 1792645149, 1792645149);
+INSERT INTO `dt_perms` VALUES (182, 147, '接收短信验证码', 'api', 'task.notify.addsmscode', NULL, 'task', 'Notify', 'addSmsCode', 0, 1, 1792645149, 1792645149);
 
 -- ----------------------------
 -- Table structure for dt_role_perms
@@ -734,7 +738,7 @@ CREATE TABLE `dt_role_perms`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_type_perms_id`(`type`, `perms_id`) USING BTREE COMMENT '角色类型+权限ID唯一索引',
   INDEX `idx_perms_id`(`perms_id`) USING BTREE COMMENT '权限ID索引'
-) ENGINE = InnoDB AUTO_INCREMENT = 1361 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1372 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_role_perms
@@ -929,6 +933,13 @@ INSERT INTO `dt_role_perms` VALUES (1356, 'admin', 177, 1792640931, 1792640931);
 INSERT INTO `dt_role_perms` VALUES (1357, 'super', 176, 1792640931, 1792640931);
 INSERT INTO `dt_role_perms` VALUES (1358, 'admin', 176, 1792640931, 1792640931);
 INSERT INTO `dt_role_perms` VALUES (1360, 'task', 178, 1792644481, 1792644481);
+INSERT INTO `dt_role_perms` VALUES (1361, 'super', 180, 1792645149, 1792645149);
+INSERT INTO `dt_role_perms` VALUES (1362, 'admin', 180, 1792645149, 1792645149);
+INSERT INTO `dt_role_perms` VALUES (1364, 'super', 179, 1792645149, 1792645149);
+INSERT INTO `dt_role_perms` VALUES (1365, 'admin', 179, 1792645149, 1792645149);
+INSERT INTO `dt_role_perms` VALUES (1367, 'super', 181, 1792645149, 1792645149);
+INSERT INTO `dt_role_perms` VALUES (1368, 'admin', 181, 1792645149, 1792645149);
+INSERT INTO `dt_role_perms` VALUES (1371, 'task', 182, 1792645149, 1792645149);
 
 -- ----------------------------
 -- Table structure for dt_roles
@@ -983,6 +994,7 @@ CREATE TABLE `dt_sms_trade`  (
   `remark` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '附言',
   `order_id` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '关联订单',
   `status` tinyint(1) NULL DEFAULT 1 COMMENT '状态',
+  `time` int(10) NOT NULL DEFAULT 0 COMMENT '推送时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `notify_id`(`notify_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;

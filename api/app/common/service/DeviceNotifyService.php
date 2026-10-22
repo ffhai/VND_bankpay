@@ -34,11 +34,8 @@ class DeviceNotifyService extends Service
 
     public static function setPending(array $params): array
     {
-        $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        $status = filter_var($params['status'] ?? null, FILTER_VALIDATE_INT);
-        if ($id === false || !in_array($status, [StatusEnum::STATUS_2, StatusEnum::STATUS_OFF], true)) {
-            throw new RequestException('推送处理状态参数错误');
-        }
+        $id = $params['id'];
+        $status = $params['status'];
         return Db::transaction(function () use ($id, $status): array {
             $notify = DeviceNotifyModel::where('id', $id)->lock(true)->find();
             if (!$notify) {

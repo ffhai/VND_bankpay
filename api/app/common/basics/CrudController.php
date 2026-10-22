@@ -57,8 +57,8 @@ class CrudController extends Auth
     }
 
     public function del(){
-        $ids = $this->request->param('ids/a');
-        $this->validate->idsCheck($ids);
+        $ids = $this->request->param('ids/a', []);
+        $this->validate->idsCheck(['ids' => $ids]);
         $this->service::del($ids,$this->userItem);
         return AjaxUtils::success($ids);
     }

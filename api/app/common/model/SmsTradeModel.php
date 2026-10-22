@@ -14,6 +14,7 @@ class SmsTradeModel extends CommonModel
         'remark' => 'string',
         'order_id' => 'string',
         'status' => 'int',
+        'time' => 'int',
     ];
 
 }

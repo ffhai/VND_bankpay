@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import re
 import time
+import unicodedata
 
 
 STATUS_PROCESSED = 2
@@ -41,6 +42,21 @@ def decode_digibank(notify_id, text):
     }
 
 
+def extract_otp(text):
+    if not isinstance(text, str):
+        return None
+    normalized = ''.join(
+        char for char in unicodedata.normalize('NFD', text)
+        if unicodedata.category(char) != 'Mn'
+    )
+    keyword = r'(?:\botp\b|\bma\s*(?:otp|xac\s*(?:thuc|nhan)|bao\s*mat)\b|\b(?:verification|security)\s*code\b|\b(?:one[ -]time\s*(?:password|code)|passcode|code)\b|验证码|驗證碼)'
+    digits = r'(?<![0-9])([0-9]{4,8})(?![0-9])'
+    match = re.search(keyword + r'\D{0,40}' + digits, normalized, re.IGNORECASE)
+    if match is None:
+        match = re.search(digits + r'\D{0,30}' + keyword, normalized, re.IGNORECASE)
+    return match.group(1) if match else None
+
+
 def process_notification(item, api):
     notify_id = item['id']
     try:
@@ -51,8 +67,23 @@ def process_notification(item, api):
         log('[%s]content解析失败' % notify_id)
         return api.setPending({'id': notify_id, 'status': STATUS_FAILED})
 
+    if content.get('package_name') == 'com.google.android.apps.messaging':
+        text = '\n'.join(
+            content[key] for key in ('extrasBigText', 'extrasText', 'tickerText', 'text')
+            if isinstance(content.get(key), str)
+        )
+        verify_code = extract_otp(text)
+        if verify_code is None:
+            log('[%s]未匹配到短信验证码' % notify_id)
+            return api.setPending({'id': notify_id, 'status': STATUS_FAILED})
+        log('[%s]短信验证码匹配成功' % notify_id)
+        # 手机号码和时间由接收端从原始推送读取，验证码保持字符串以保留前导零。
+        result = api.addSmsCode({'notify_id': notify_id, 'verify_code': verify_code})
+        status = '成功' if isinstance(result, dict) and result.get('code') == 1 else '失败'
+        log('[%s]短信验证码上传%s，返回：%s' % (notify_id, status, json.dumps(result, ensure_ascii=False)))
+        return result
+
     if content.get('package_name') != 'com.msb.digibank.retail':
-        # 非交易通知不再向已移除的 sms_code 等字段写入数据。
         return api.setPending({'id': notify_id, 'status': STATUS_PROCESSED})
 
     text = content.get('extrasText') or content.get('extrasBigText') or content.get('text') or content.get('tickerText') or ''
@@ -61,9 +92,11 @@ def process_notification(item, api):
         log('[%s]交易识别失败' % notify_id)
         return api.setPending({'id': notify_id, 'status': STATUS_FAILED})
 
+    log('[%s]短信交易内容匹配成功' % notify_id)
     result = api.addSmsTrade(data)
     # 入库成功后由接收端更新推送状态；上传失败时保留未处理状态，等待重试。
-    log('[%s]交易上传返回：%s' % (notify_id, json.dumps(result, ensure_ascii=False)))
+    status = '成功' if isinstance(result, dict) and result.get('code') == 1 else '失败'
+    log('[%s]短信交易上传%s，返回：%s' % (notify_id, status, json.dumps(result, ensure_ascii=False)))
     return result
 
 

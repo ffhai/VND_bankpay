@@ -2,23 +2,17 @@
 declare(strict_types=1);
 namespace app\admin\controller;
 
-use app\common\basics\Auth;
+use app\common\basics\CrudController;
 use app\admin\service\SmsTradeService;
 use app\admin\validate\SmsTradeValidate;
-use app\common\utils\AjaxUtils;
+use think\App;
 
-class SmsTrade extends Auth
+class SmsTrade extends CrudController
 {
-    public function items()
+    public function __construct(App $app)
     {
-        return AjaxUtils::success(SmsTradeService::lists($this->request->param(), $this->userItem));
-    }
-
-    public function del()
-    {
-        $ids = $this->request->param('ids/a', []);
-        (new SmsTradeValidate())->idsCheck(['ids' => $ids]);
-        SmsTradeService::del($ids, $this->userItem);
-        return AjaxUtils::success();
+        parent::__construct($app);
+        $this->service = new SmsTradeService();
+        $this->validate = new SmsTradeValidate();
     }
 }

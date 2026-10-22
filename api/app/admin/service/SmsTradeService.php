@@ -5,6 +5,7 @@ namespace app\admin\service;
 use app\common\basics\Service;
 use app\common\exception\RequestException;
 use app\common\model\SmsTradeModel;
+use app\common\utils\TimeUtils;
 
 class SmsTradeService extends Service
 {
@@ -18,6 +19,9 @@ class SmsTradeService extends Service
             'page' => $get['page'] ?? 1,
             'list_rows' => $get['pagesize'] ?? 20,
         ])->toArray();
+        foreach ($lists['data'] as &$item) {
+            $item['time'] = TimeUtils::formatTime((int) $item['time']);
+        }
         return ['count' => $lists['total'], 'items' => $lists['data']];
     }
 

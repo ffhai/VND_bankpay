@@ -78,6 +78,9 @@ class Api:
         url = '/task/Notify/addSmsTrade'
         req = self.request(url,True,dict(data))
         return req
+
+    def addSmsCode(self,data):
+        return self.request('/task/Notify/addSmsCode',True,dict(data))
     
     def addPending(self,data):
         url = '/task/Notify/add'

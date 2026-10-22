@@ -4,6 +4,7 @@ namespace app\task\controller;
 use app\common\service\DeviceNotifyService;
 use app\common\utils\AjaxUtils;
 use app\task\service\SmsTradeService;
+use app\task\service\SmsCodeService;
 use think\facade\Log;
 
 
@@ -24,6 +25,7 @@ class Notify extends \app\common\basics\Api
             'text'=>$params['text'] ?? '',
             'tickerText'=>$params['tickerText'] ?? '',
             'extrasText'=>$params['extrasText'] ?? '',
+            'extrasBigText'=>$params['extrasBigText'] ?? '',
         ];
         Log::debug($data);
         DeviceNotifyService::addContent($params['phone_number'],json_encode($data),$this->userItem);
@@ -47,6 +49,11 @@ class Notify extends \app\common\basics\Api
 
     public function addSmsTrade(){
         $data = SmsTradeService::receive($this->request->param());
+        return AjaxUtils::success('success', $data);
+    }
+
+    public function addSmsCode(){
+        $data = SmsCodeService::receive($this->request->param());
         return AjaxUtils::success('success', $data);
     }
 

@@ -22,7 +22,6 @@
         </el-form-item>
         <el-form-item class="search-actions">
           <el-button type="primary" :loading="loading" @click="onSearch">查询</el-button>
-          <el-button :disabled="loading" @click="onReset">重置</el-button>
           <el-button type="danger" :loading="deleting" @click="onDelete">删除</el-button>
         </el-form-item>
       </el-form>
@@ -64,6 +63,7 @@
             >
           </template>
         </el-table-column>
+        <el-table-column prop="time" label="时间" width="180" />
       </el-table>
     </div>
     <CrudPagination
@@ -89,7 +89,6 @@ const {
   total,
   searchForm,
   onSearch,
-  onReset,
   onCurrentChange,
   onSizeChange,
   handleSelectionChange,
