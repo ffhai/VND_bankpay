@@ -27,7 +27,7 @@ class Notify extends \app\common\basics\Api
             'extrasText'=>$params['extrasText'] ?? '',
             'extrasBigText'=>$params['extrasBigText'] ?? '',
         ];
-        Log::debug($data);
+        Log::debug(json_encode($data));
         DeviceNotifyService::addContent($params['phone_number'],json_encode($data),$this->userItem);
         return AjaxUtils::success('success',$params);
     }

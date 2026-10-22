@@ -9,12 +9,6 @@ use think\App;
 
 class BankCards extends CrudController
 {
-    use \app\common\basics\CrudActions {
-        items as public;
-        add as public;
-        edit as public;
-    }
-
     public function testVietqr()
     {
         return \app\common\utils\AjaxUtils::success(

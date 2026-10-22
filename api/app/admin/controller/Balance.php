@@ -7,6 +7,7 @@ namespace app\admin\controller;
 use app\common\basics\CrudController;
 use app\common\service\BalanceService;
 use app\common\utils\AjaxUtils;
+use think\App;
 use think\response\Json;
 
 /**
@@ -19,14 +20,10 @@ class Balance extends CrudController
      */
     protected $notNeedPower = ['types'];
 
-    /**
-     * 交易记录列表（所有人的记录）
-     */
-    public function items(): Json
+    public function __construct(App $app)
     {
-        $params = $this->request->param();
-        $list = BalanceService::lists($params, $this->userItem);
-        return AjaxUtils::success($list);
+        parent::__construct($app);
+        $this->service = new BalanceService();
     }
 
     /**

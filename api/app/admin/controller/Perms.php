@@ -12,10 +12,6 @@ use think\response\Json;
 
 class Perms extends CrudController
 {
-    use \app\common\basics\CrudActions {
-        del as public;
-    }
-
     public function __construct(App $app)
     {
         parent::__construct($app);
@@ -27,20 +23,6 @@ class Perms extends CrudController
         $list = $this->service::getTreeData();
         return AjaxUtils::success($list);
     }
-    public function add(){
-        $data = $this->request->param();
-        $this->validate->goCheck('add',$data);
-        $this->service::add($data,$this->userItem);
-        return AjaxUtils::success();
-    }
-
-    public function edit(){
-        $data = $this->request->param();
-        $this->validate->goCheck('edit',$data);
-        $this->service::edit($data,$this->userItem);
-        return AjaxUtils::success();
-    }
-
     public function createCurd(){
         $id = $this->request->param('id',0,'intval');
         if ($id <= 0) {

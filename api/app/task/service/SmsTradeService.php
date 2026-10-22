@@ -44,16 +44,26 @@ class SmsTradeService extends Service
 
             $order = null;
             if ($change > 0) {
-                $query = OrderModel::where('settlement_time', 0)->where('status', OrderModel::STATUS_PAYING);
+                // 先匹配备注 + 金额，未命中再匹配卡号 + 金额。
+                $matches = [];
                 if (mb_strlen($params['remark'], 'UTF-8') === (int) config('order.ps_length')) {
-                    $query->where('ps', $params['remark']);
-                } else {
-                    $query->where('bank_number', $params['bank_number'])->where('amount', $change);
+                    $matches[] = ['ps' => $params['remark']];
                 }
-                $order = $query->field('order_id,amount')->order('id', 'desc')->lock(true)->find();
+                $matches[] = ['bank_number' => $params['bank_number']];
+
+                foreach ($matches as $match) {
+                    $order = OrderModel::where('settlement_time', 0)
+                        ->where('status', OrderModel::STATUS_PAYING)
+                        ->where('amount', $change)
+                        ->where($match)
+                        ->field('order_id')->order('id', 'desc')->lock(true)->find();
+                    if ($order !== null) {
+                        break;
+                    }
+                }
             }
 
-            $matched = $order && (int) $order['amount'] === $change;
+            $matched = $order !== null;
             if ($matched) {
                 OrderService::confirmed(['order_id' => $order['order_id']], []);
             }

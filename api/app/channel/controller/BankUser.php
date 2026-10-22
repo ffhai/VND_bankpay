@@ -10,13 +10,6 @@ use think\App;
 
 class BankUser extends CrudController
 {
-    use \app\common\basics\CrudActions {
-        items as public;
-        add as public;
-        edit as public;
-        getOptions as public;
-    }
-
 protected function beforeAdd(array $params): array
     {
         $params['status'] = $params['status'] ?? \app\common\enums\StatusEnum::STATUS_1;

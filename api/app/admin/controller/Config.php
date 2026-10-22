@@ -9,17 +9,12 @@ use app\common\model\ConfigModel;
 use app\common\utils\AjaxUtils;
 use app\common\utils\CacheUtils;
 use app\common\utils\UrlUtils;
-use think\App;
 use think\facade\Cache;
 use think\response\Json;
 
 
 class Config extends CrudController
 {
-    public function __construct(App $app)
-    {
-        parent::__construct($app);
-    }
     public function items():Json
     {
         $configModel = new ConfigModel();
