@@ -30,8 +30,6 @@ try{
     $id=Db::name('bank_cards')->insertGetId(['bank_number'=>'99'.random_int(1000000000,9999999999),'balance'=>AmountUtils::MAX,'limit_in_max'=>AmountUtils::MAX,'limit_out_max'=>AmountUtils::MAX]);
     $card=Db::name('bank_cards')->where('id',$id)->find();
     amountCheck((int)$card['balance']===AmountUtils::MAX && (int)$card['limit_in_max']===AmountUtils::MAX,'bank balance and limits store all 13 digits');
-    $id=Db::name('device_notify')->insertGetId(['balance'=>AmountUtils::MAX]);
-    amountCheck((int)Db::name('device_notify')->where('id',$id)->value('balance')===AmountUtils::MAX,'device amount stores all 13 digits');
     amountCheck(!method_exists(\app\admin\controller\Order::class,'cancel') && !method_exists(\app\common\service\OrderService::class,'cancel'),'manual cancellation methods removed');
     amountCheck(!Db::name('perms')->where('permission_key','admin.order.cancel')->find(),'manual cancellation permission removed');
 }finally{Db::rollback();}

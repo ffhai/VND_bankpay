@@ -17,21 +17,17 @@
           <el-input v-model="searchForm.username" placeholder="搜索账号" />
         </el-form-item>
         <el-form-item class="search-field">
-          <el-input v-model="searchForm.order_id" placeholder="搜索订单号" />
+          <el-input v-model="searchForm.phone_number" placeholder="搜索手机号" />
         </el-form-item>
         <el-form-item class="search-field">
-          <el-input v-model="searchForm.card_number" placeholder="搜索卡号" />
-        </el-form-item>
-        <el-form-item class="search-field">
-          <el-input v-model="searchForm.remark" placeholder="搜索附言" />
+          <el-input v-model="searchForm.content" placeholder="搜索推送内容" />
         </el-form-item>
         <el-form-item class="search-field">
           <el-select v-model="searchForm.status" placeholder="搜索状态">
             <el-option label="全部" value="" />
-            <el-option label="未处理" value="0" />
-            <el-option label="匹配成功" value="1" />
-            <el-option label="匹配失败" value="2" />
-            <el-option label="其他" value="-1" />
+            <el-option label="未处理" value="1" />
+            <el-option label="已处理" value="2" />
+            <el-option label="处理失败" value="-1" />
           </el-select>
         </el-form-item>
         <el-form-item class="search-actions">
@@ -53,7 +49,7 @@
         <el-table-column type="selection" width="55" />
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="user.username" label="账号" width="150" />
-        <el-table-column prop="type" label="Type" width="120px" />
+        <el-table-column prop="phone_number" label="手机号" width="150" />
 
         <el-table-column label="推送原文">
           <template #default="scope">
@@ -62,38 +58,24 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="匹配" width="260">
-          <template #default="scope">
-            <div v-if="scope.row.type == 'BANK_TRADE'">
-              <div style="word-break: break-all">卡号：{{ scope.row.card_number }}</div>
-              <div style="word-break: break-all">
-                余额：{{ scope.row.balance.toLocaleString("zh-CN") }}
-              </div>
-              <div style="word-break: break-all">附言：{{ scope.row.remark }}</div>
-            </div>
-            <div v-if="scope.row.type == 'SMS_CODE'">
-              <div style="word-break: break-all">手机号码：{{ scope.row.phone_number }}</div>
-              <div style="word-break: break-all">验证码：{{ scope.row.sms_code }}</div>
-            </div>
-          </template>
-        </el-table-column>
         <el-table-column prop="time" label="时间" width="160" />
-        <el-table-column label="状态" width="80" align="center">
+        <el-table-column label="状态" width="100" align="center">
           <template #default="scope">
-            <el-tag v-if="scope.row.status === -1" disable-transitions type="warning">其他</el-tag>
-            <el-tag v-if="scope.row.status === 0" disable-transitions type="info">未匹配</el-tag>
-            <el-tag v-if="scope.row.status === 1" disable-transitions>匹配成功</el-tag>
-            <el-tag v-if="scope.row.status === 2" disable-transitions type="info">匹配失败</el-tag>
+            <el-tag v-if="scope.row.status === 1" disable-transitions type="info">未处理</el-tag>
+            <el-tag v-if="scope.row.status === 2" disable-transitions type="success">已处理</el-tag>
+            <el-tag v-if="scope.row.status === -1" disable-transitions type="danger"
+              >处理失败</el-tag
+            >
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="80" fixed="right">
+        <el-table-column label="操作" width="110" fixed="right">
           <template #default="scope">
             <el-button
               type="primary"
               size="small"
               :loading="isRowActionPending('reset:' + scope.row.id)"
               @click="onItemReset(scope.row)"
-              >重新匹配</el-button
+              >重新处理</el-button
             >
           </template>
         </el-table-column>
@@ -131,20 +113,19 @@ const {
 } = useTableList({
   fetchList: (params) => api.getItems(params),
   initialSearch: {
-    order_id: "",
     username: "",
     time: "",
     status: "",
 
-    card_number: "",
-    remark: "",
+    phone_number: "",
+    content: "",
   },
   deleteApi: (data) => api.del(data),
 });
 
 const onItemReset = (item) =>
   runRowAction("reset:" + item.id, () => {
-    return ElMessageBox.confirm("此操作将重新匹配原文, 是否继续?", "提示", {
+    return ElMessageBox.confirm("此操作将状态重置为未处理，是否继续？", "提示", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning",

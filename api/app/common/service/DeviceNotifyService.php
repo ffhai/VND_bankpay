@@ -8,7 +8,6 @@ namespace app\common\service;
 use app\common\basics\Service;
 use app\common\enums\StatusEnum;
 use app\common\exception\RequestException;
-use app\common\model\AppListModel;
 use app\common\model\BankCardsModel;
 use app\common\model\DeviceNotifyModel;
 use app\common\model\OrderModel;
@@ -23,12 +22,13 @@ class DeviceNotifyService extends Service
             'content'=>$content,
             'phone_number'=>$phone_number,
             'time'=>time(),
+            'status'=>StatusEnum::STATUS_1,
         ]);
     }
 
     public static function getPending(){
         $model = new DeviceNotifyModel();
-        $items = $model->where('status','=',StatusEnum::STATUS_0)->field('id,content,time')->order('id')->select();
+        $items = $model->where('status','=',StatusEnum::STATUS_1)->field('id,content,time')->order('id')->select();
         if($items->isEmpty()){
             return [];
         }
@@ -54,7 +54,7 @@ class DeviceNotifyService extends Service
         //银行推送
         if($data['type'] == DeviceNotifyModel::TYPE_BANK_TRADE){
             if($data['balance'] == 0 && empty($data['card_number']) && empty($data['remark'])){
-                $data['status'] = DeviceNotifyModel::STATUS_OTHER;
+                $data['status'] = StatusEnum::STATUS_2;
             }else{
                 $orderItem = false;
                 //金额和 附言匹配
@@ -85,7 +85,7 @@ class DeviceNotifyService extends Service
 
                 if($orderItem){
                     //匹配成功
-                    $data['status'] = DeviceNotifyModel::STATUS_SUCC;
+                    $data['status'] = StatusEnum::STATUS_2;
                     $data['order_id'] = $orderItem['order_id'];
 
                     try {
@@ -94,13 +94,13 @@ class DeviceNotifyService extends Service
                         if (empty($e->data['manual_review'])) {
                             throw $e;
                         }
-                        $data['status'] = DeviceNotifyModel::STATUS_FIAL;
+                        $data['status'] = StatusEnum::STATUS_OFF;
                         $confirmation = $e->data;
                         Log::warning('设备通知确认异常：' . json_encode($confirmation));
                     }
                 }else{
                     //未匹配到订单
-                    $data['status'] = DeviceNotifyModel::STATUS_FIAL;
+                    $data['status'] = StatusEnum::STATUS_OFF;
                 }
 
                 //更新卡号余额
@@ -116,14 +116,14 @@ class DeviceNotifyService extends Service
         //短信
         if($data['type'] == DeviceNotifyModel::TYPE_SMS_CODE){
             if(!empty($data['sms_code'])){
-                $data['status'] = DeviceNotifyModel::STATUS_SUCC;
+                $data['status'] = StatusEnum::STATUS_2;
             }else{
-                $data['status'] = DeviceNotifyModel::STATUS_FIAL;
+                $data['status'] = StatusEnum::STATUS_OFF;
             }
         }
 
         if($data['type'] == DeviceNotifyModel::TYPE_OTHER){
-            $data['status'] = DeviceNotifyModel::STATUS_OTHER;
+            $data['status'] = StatusEnum::STATUS_2;
         }
 
         $model->where('id','=',$data['id'])->update($data);

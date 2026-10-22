@@ -11,7 +11,7 @@
  Target Server Version : 50726
  File Encoding         : 65001
 
- Date: 22/10/2026 10:56:26
+ Date: 22/10/2026 11:57:08
 */
 
 SET NAMES utf8mb4;
@@ -110,7 +110,7 @@ CREATE TABLE `dt_bank_cards`  (
 -- ----------------------------
 -- Records of dt_bank_cards
 -- ----------------------------
-INSERT INTO `dt_bank_cards` VALUES (10, 31, '1035664310', 'VCB', 10, 0, '', '', '', 'online', '', 0, 0, '', 1, 0, 1792587971, 1792588696);
+INSERT INTO `dt_bank_cards` VALUES (10, 31, '80000186204', 'VCB', 10, 70200, '', '', '13000000000', 'online', '', 0, 0, '', 1, 0, 1792587971, 1792641405);
 
 -- ----------------------------
 -- Table structure for dt_bank_user
@@ -269,16 +269,18 @@ CREATE TABLE `dt_device_notify`  (
   `type` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
   `phone_number` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `card_number` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
-  `balance` bigint(20) NOT NULL DEFAULT 0 COMMENT '整数金额，最多13位',
-  `sms_code` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
   `remark` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
-  `order_id` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '',
   `time` int(10) NULL DEFAULT 0,
-  `status` tinyint(1) NULL DEFAULT 0,
+  `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1未处理 2已处理 -1处理失败',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `task_online_smscode`(`uid`, `type`, `phone_number`, `time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of dt_device_notify
+-- ----------------------------
+INSERT INTO `dt_device_notify` VALUES (7, 1, '', '13000000000', '{\"package_name\":\"com.msb.digibank.retail\",\"text\":\"\",\"tickerText\":\"\",\"extrasText\":\"T\\u00e0i kho\\u1ea3n: 800xx6204 S\\u1ed1 d\\u01b0: 70,300 VND ND: 80000186204-6282IBT1i1WJWDGM-DCZ8P1HF\"}', '', 1792639277, 1);
+INSERT INTO `dt_device_notify` VALUES (8, 1, '', '13000000000', '{\"package_name\":\"com.google.android.apps.messaging\",\"text\":\"\",\"tickerText\":\"\",\"extrasText\":\"Tai khoan VCB Digibank cua Quy khach dang dang nhap tren trinh duyet Web MOI. Ma OTP xac thuc la 535928 hieu luc 1 phut. TUYET DOI KHONG DE LO MA OTP\"}', '', 1792639277, 1);
 
 -- ----------------------------
 -- Table structure for dt_editor
@@ -313,7 +315,7 @@ CREATE TABLE `dt_login_log`  (
   `ip` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT 'IPv4/IPv6',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_uid_time`(`uid`, `time`) USING BTREE COMMENT '按用户+时间查登录记录'
-) ENGINE = InnoDB AUTO_INCREMENT = 162 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '登录记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 164 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '登录记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_login_log
@@ -470,6 +472,8 @@ INSERT INTO `dt_login_log` VALUES (158, 31, '', 1792586738, 1, '', '127.0.0.1');
 INSERT INTO `dt_login_log` VALUES (159, 3, '', 1792587263, 1, '', '127.0.0.1');
 INSERT INTO `dt_login_log` VALUES (160, 31, '', 1792632965, 1, '', '127.0.0.1');
 INSERT INTO `dt_login_log` VALUES (161, 3, '', 1792634036, 1, '', '127.0.0.1');
+INSERT INTO `dt_login_log` VALUES (162, 1, '', 1792638579, 1, '', '127.0.0.1');
+INSERT INTO `dt_login_log` VALUES (163, 31, '', 1792639355, 1, '', '127.0.0.1');
 
 -- ----------------------------
 -- Table structure for dt_order
@@ -517,10 +521,7 @@ CREATE TABLE `dt_order`  (
 -- ----------------------------
 -- Records of dt_order
 -- ----------------------------
-INSERT INTO `dt_order` VALUES (1, '7O2208500949995298', '1792630209', 3, 'bank2bank', 31, '1035664310', 100, 'KYI0TCW4', 2, 2, 1792635662, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792630209, 1792630809, 1792630231, 1792630240, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'created');
-INSERT INTO `dt_order` VALUES (2, 'AS2208522052549749', '1792630340', 3, 'bank2bank', 31, '1035664310', 100, 'F4NDLQP8', 2, 2, 1792637769, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792630340, 1792630940, 1792630347, 1792630350, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'created');
-INSERT INTO `dt_order` VALUES (3, 'DF2209054557539799', '1792631145', 3, 'bank2bank', 31, '1035664310', 100, '48L9GCB6', 1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792631145, 1792631745, 0, 0, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'created');
-INSERT INTO `dt_order` VALUES (4, '3Y2209201097971029', '1792632010', 3, 'bank2bank', 31, '1035664310', 100, 'N9VE6WHF', 1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792632010, 1792632610, 0, 0, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'created');
+INSERT INTO `dt_order` VALUES (4, '3Y2209201097971029', '1792632010', 3, 'bank2bank', 31, '80000186204', 100, 'DCZ8P1HF', 1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792632010, 1792632610, 0, 0, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'created');
 
 -- ----------------------------
 -- Table structure for dt_pay_type
@@ -567,7 +568,7 @@ CREATE TABLE `dt_perms`  (
   UNIQUE INDEX `uk_route_path`(`route_path`) USING BTREE,
   INDEX `idx_module_controller_action`(`module`, `controller`, `action`) USING BTREE COMMENT '模块控制器方法组合索引',
   INDEX `idx_parent_sort`(`parent_id`, `sort`) USING BTREE COMMENT '父级+排序(菜单树/级联删除)'
-) ENGINE = InnoDB AUTO_INCREMENT = 174 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 178 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_perms
@@ -695,7 +696,7 @@ INSERT INTO `dt_perms` VALUES (150, 146, 'API', 'group', NULL, NULL, 'task', 'Ap
 INSERT INTO `dt_perms` VALUES (151, 150, 'getNotifyTask', 'api', 'task.api.getnotifytask', NULL, 'task', 'Api', 'getNotifyTask', 0, 1, 1792585801, 1792585801);
 INSERT INTO `dt_perms` VALUES (152, 150, 'setNotifyStatus', 'api', 'task.api.setnotifystatus', NULL, 'task', 'Api', 'setNotifyStatus', 0, 1, 1792585801, 1792585801);
 INSERT INTO `dt_perms` VALUES (153, 147, 'setPending', 'api', 'task.notify.setpending', NULL, 'task', 'Notify', 'setPending', 0, 1, 1792585801, 1792585801);
-INSERT INTO `dt_perms` VALUES (154, 114, '设备推送', 'page', NULL, '/admin/order/deviceNotify', 'admin', 'DeviceNotify', '', 0, 1, 1792585801, 1792585801);
+INSERT INTO `dt_perms` VALUES (154, 174, '推送记录', 'page', NULL, '/admin/device/notifyRecords', 'admin', 'DeviceNotify', '', 0, 1, 1792585801, 1792639666);
 INSERT INTO `dt_perms` VALUES (155, 154, '列表', 'action', 'admin.devicenotify.items', NULL, 'admin', 'DeviceNotify', 'items', 0, 1, 1792585801, 1792585801);
 INSERT INTO `dt_perms` VALUES (156, 154, '删除', 'action', 'admin.devicenotify.del', NULL, 'admin', 'DeviceNotify', 'del', 0, 1, 1792585801, 1792585801);
 INSERT INTO `dt_perms` VALUES (157, 154, '重置', 'action', 'admin.devicenotify.reset', NULL, 'admin', 'DeviceNotify', 'reset', 0, 1, 1792585801, 1792585801);
@@ -714,6 +715,10 @@ INSERT INTO `dt_perms` VALUES (170, 169, '订单统计', 'api', 'merchant.statis
 INSERT INTO `dt_perms` VALUES (171, 0, '码商统计', 'group', 'channel.statistics', NULL, 'channel', '', '', 10, 1, 1792634461, 1792634461);
 INSERT INTO `dt_perms` VALUES (172, 171, '订单统计', 'api', 'channel.statistics.orders', NULL, 'channel', 'Statistics', 'orders', 0, 1, 1792634461, 1792634461);
 INSERT INTO `dt_perms` VALUES (173, 167, '账号统计', 'api', 'admin.statistics.accounts', NULL, 'admin', 'Statistics', 'accounts', 0, 1, 1792635431, 1792635431);
+INSERT INTO `dt_perms` VALUES (174, 0, '设备推送', 'group', NULL, '/admin/device', '', '', '', 0, 1, 1792639666, 1792639666);
+INSERT INTO `dt_perms` VALUES (175, 174, '短信交易', 'page', NULL, '/admin/device/smsTrade', 'admin', 'SmsTrade', '', 0, 1, 1792640931, 1792640931);
+INSERT INTO `dt_perms` VALUES (176, 175, '查询', 'action', 'admin.smstrade.items', NULL, 'admin', 'SmsTrade', 'items', 0, 1, 1792640931, 1792640931);
+INSERT INTO `dt_perms` VALUES (177, 175, '删除', 'action', 'admin.smstrade.del', NULL, 'admin', 'SmsTrade', 'del', 0, 1, 1792640931, 1792640931);
 
 -- ----------------------------
 -- Table structure for dt_role_perms
@@ -728,7 +733,7 @@ CREATE TABLE `dt_role_perms`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_type_perms_id`(`type`, `perms_id`) USING BTREE COMMENT '角色类型+权限ID唯一索引',
   INDEX `idx_perms_id`(`perms_id`) USING BTREE COMMENT '权限ID索引'
-) ENGINE = InnoDB AUTO_INCREMENT = 1353 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1360 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_role_perms
@@ -916,6 +921,12 @@ INSERT INTO `dt_role_perms` VALUES (1349, 'merchant', 170, 1792634461, 179263446
 INSERT INTO `dt_role_perms` VALUES (1350, 'channel', 172, 1792634461, 1792634461);
 INSERT INTO `dt_role_perms` VALUES (1351, 'admin', 173, 1792635431, 1792635431);
 INSERT INTO `dt_role_perms` VALUES (1352, 'super', 173, 1792635431, 1792635431);
+INSERT INTO `dt_role_perms` VALUES (1353, 'super', 175, 1792640931, 1792640931);
+INSERT INTO `dt_role_perms` VALUES (1354, 'super', 177, 1792640931, 1792640931);
+INSERT INTO `dt_role_perms` VALUES (1355, 'admin', 175, 1792640931, 1792640931);
+INSERT INTO `dt_role_perms` VALUES (1356, 'admin', 177, 1792640931, 1792640931);
+INSERT INTO `dt_role_perms` VALUES (1357, 'super', 176, 1792640931, 1792640931);
+INSERT INTO `dt_role_perms` VALUES (1358, 'admin', 176, 1792640931, 1792640931);
 
 -- ----------------------------
 -- Table structure for dt_roles
@@ -942,6 +953,23 @@ INSERT INTO `dt_roles` VALUES (3, 'user', '用户', 1, '', 1783578101, 179207541
 INSERT INTO `dt_roles` VALUES (12, 'channel', '码商', 1, '', 1792585801, 1792586768);
 INSERT INTO `dt_roles` VALUES (13, 'merchant', '商户', 1, '', 1792585801, 1792585801);
 INSERT INTO `dt_roles` VALUES (14, 'task', '任务服务', 1, '', 1792585801, 1792585801);
+
+-- ----------------------------
+-- Table structure for dt_sms_trade
+-- ----------------------------
+DROP TABLE IF EXISTS `dt_sms_trade`;
+CREATE TABLE `dt_sms_trade`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `notify_id` int(10) NULL DEFAULT 0 COMMENT '设备推送ID',
+  `bank_number` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '银行卡号',
+  `balance` int(10) NULL DEFAULT 0 COMMENT '余额',
+  `change` int(10) NULL DEFAULT 0 COMMENT '变动',
+  `remark` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '附言',
+  `order_id` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '关联订单',
+  `status` tinyint(1) NULL DEFAULT 1 COMMENT '状态',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `notify_id`(`notify_id`) USING BTREE
+) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for dt_upload

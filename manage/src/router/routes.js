@@ -37,10 +37,20 @@ const routesMap = {
     meta: { title: "订单列表" },
     hidden: false,
   },
-  "/admin/order/deviceNotify": {
-    name: "设备推送",
-    component: () => import("@/views/admin/order/deviceNotify.vue"),
-    meta: { title: "设备推送" },
+  "/admin/device": {
+    meta: { title: "设备推送", icon: "Connection" },
+    hidden: false,
+  },
+  "/admin/device/notifyRecords": {
+    name: "推送记录",
+    component: () => import("@/views/admin/device/notifyRecords.vue"),
+    meta: { title: "推送记录" },
+    hidden: false,
+  },
+  "/admin/device/smsTrade": {
+    name: "短信交易",
+    component: () => import("@/views/admin/device/smsTrade.vue"),
+    meta: { title: "短信交易" },
     hidden: false,
   },
   "/channel/bank": {

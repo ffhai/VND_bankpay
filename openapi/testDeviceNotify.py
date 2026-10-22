@@ -22,6 +22,7 @@ data = {
     'tickerText':'',
     'extrasText':'Tài khoản: 800xx6204 Số dư: 70,300 VND ND: 80000186204-6282IBT1i1WJWDGM-DCZ8P1HF',
     'extrasBigText':'',
+    'phone_number':'13000000000',
 }
 ret = api.addPending(data)
 print(ret)
@@ -32,6 +33,7 @@ data = {
     'tickerText':'',
     'extrasText':'Tai khoan VCB Digibank cua Quy khach dang dang nhap tren trinh duyet Web MOI. Ma OTP xac thuc la 535928 hieu luc 1 phut. TUYET DOI KHONG DE LO MA OTP',
     'extrasBigText':'',
+    'phone_number':'13000000000',
 }
 
 ret = api.addPending(data)
