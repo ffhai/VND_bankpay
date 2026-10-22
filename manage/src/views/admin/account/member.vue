@@ -36,6 +36,9 @@
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="role_name" label="角色" width="80" />
         <el-table-column prop="username" label="账号" />
+        <el-table-column label="费率" width="120" align="right">
+          <template #default="scope">{{ Number(scope.row.rate || 0).toFixed(4) }}%</template>
+        </el-table-column>
         <el-table-column label="余额" width="120" align="right">
           <template #default="scope">
             {{ formatAmount(scope.row.balance) }}
@@ -67,6 +70,7 @@
     />
     <FormDialog
       v-model="dialogVisible"
+      label-width="auto"
       :title="dialogTitle"
       :mode="mode"
       :model="form"
@@ -158,6 +162,13 @@ const formFields = computed(() => [
   { prop: "username", label: "账号名称", placeholder: "请输入账号名称" },
   { prop: "password", label: "账号密码", placeholder: "密码长度不可小于6个字符" },
   {
+    prop: "rate",
+    label: "费率（%）",
+    type: "number",
+    required: true,
+    props: { min: 0, max: 100, precision: 4, step: 0.0001 },
+  },
+  {
     prop: "status",
     label: "状态",
     type: "select",
@@ -193,12 +204,12 @@ const getRoles = async () => {
 
 const onAdd = () => {
   mode.value = "add";
-  form.value = { type: "", username: "", password: "", status: 1 };
+  form.value = { type: "", username: "", password: "", rate: 0, status: 1 };
   dialogVisible.value = true;
 };
 const onItemEdit = (item) => {
   mode.value = "edit";
-  form.value = { ...item };
+  form.value = { ...item, rate: Number(item.rate || 0) };
   dialogVisible.value = true;
 };
 const onSubmit = async (data) => {

@@ -53,6 +53,7 @@ class UserService extends Service
             'type'          => $post['type'],
             'username'        => $post['username'],
             'password'        => $post['password'],
+            'rate'            => \app\common\utils\RateUtils::normalize($post['rate'] ?? '0'),
             'status'        => $post['status'] ?? StatusEnum::STATUS_1,
             'create_time'  => time(),
             'update_time'  => time()
@@ -70,6 +71,9 @@ class UserService extends Service
         ];
         if(empty($data['password'])){
             unset($data['password']);
+        }
+        if (array_key_exists('rate', $post)) {
+            $data['rate'] = \app\common\utils\RateUtils::normalize($post['rate']);
         }
         UserModel::update($data, ['id'=>intval($post['id'])]);
 

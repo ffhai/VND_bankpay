@@ -11,7 +11,7 @@
  Target Server Version : 50726
  File Encoding         : 65001
 
- Date: 21/10/2026 23:13:50
+ Date: 22/10/2026 08:55:22
 */
 
 SET NAMES utf8mb4;
@@ -33,7 +33,7 @@ CREATE TABLE `dt_app_list`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `appid`(`appid`) USING BTREE,
   INDEX `idx_create_time`(`create_time`) USING BTREE COMMENT '创建时间区间筛选'
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '应用接口' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '应用接口' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_app_list
@@ -58,27 +58,20 @@ CREATE TABLE `dt_balance_log`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_create_time`(`create_time`) USING BTREE COMMENT '时间索引',
   INDEX `idx_user_time`(`user_id`, `create_time`) USING BTREE COMMENT '用户+时间组合索引(按用户查流水并排序)'
-) ENGINE = InnoDB AUTO_INCREMENT = 78 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '余额变动记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '余额变动记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_balance_log
 -- ----------------------------
-INSERT INTO `dt_balance_log` VALUES (1, 1, 10000, 10000, 'adjust', 'test', 'admin', 1791908719);
-INSERT INTO `dt_balance_log` VALUES (4, 3, 10000, 10000, 'recharge', '', 'admin', 1791909561);
-INSERT INTO `dt_balance_log` VALUES (5, 3, -2000, 8000, 'adjust', '', 'admin', 1791981103);
-INSERT INTO `dt_balance_log` VALUES (39, 31, 10000, 10000, 'recharge', '', 'admin', 1792586961);
-INSERT INTO `dt_balance_log` VALUES (48, 1, -10000, 0, 'deduct', '', 'admin', 1792587396);
-INSERT INTO `dt_balance_log` VALUES (49, 31, -100, 9900, 'CreateOrder', '442121062650515798', 'sys', 1792587986);
-INSERT INTO `dt_balance_log` VALUES (50, 31, -100, 9800, 'CreateOrder', 'SF2121114852569756', 'sys', 1792588308);
-INSERT INTO `dt_balance_log` VALUES (51, 31, -100, 9700, 'CreateOrder', 'NV2121115699575355', 'sys', 1792588316);
-INSERT INTO `dt_balance_log` VALUES (52, 31, -100, 9600, 'CreateOrder', 'KN2121122899485510', 'sys', 1792588348);
-INSERT INTO `dt_balance_log` VALUES (53, 31, -100, 9500, 'CreateOrder', 'W62121182549102481', 'sys', 1792588705);
-INSERT INTO `dt_balance_log` VALUES (54, 31, 100, 9600, 'CancelOrder', '442121062650515798', 'sys', 1792591006);
-INSERT INTO `dt_balance_log` VALUES (55, 31, 100, 9700, 'CancelOrder', 'SF2121114852569756', 'sys', 1792591006);
-INSERT INTO `dt_balance_log` VALUES (56, 31, 100, 9800, 'CancelOrder', 'NV2121115699575355', 'sys', 1792591006);
-INSERT INTO `dt_balance_log` VALUES (57, 31, 100, 9900, 'CancelOrder', 'KN2121122899485510', 'sys', 1792591006);
-INSERT INTO `dt_balance_log` VALUES (58, 31, -100, 9800, 'CreateOrder', 'ZF2122032610197529', 'sys', 1792591406);
-INSERT INTO `dt_balance_log` VALUES (63, 31, -100, 9700, 'CreateOrder', 'O32122573198554810', 'sys', 1792594651);
+INSERT INTO `dt_balance_log` VALUES (1, 31, 10000, 10000, 'adjust', '', 'admin', 1792630205);
+INSERT INTO `dt_balance_log` VALUES (2, 31, -100, 9900, 'CreateOrder', '7O2208500949995298', 'sys', 1792630209);
+INSERT INTO `dt_balance_log` VALUES (3, 3, 100, 100, 'Settlement', '截止1792630240，合计100，费率10.0000%，本金', 'sys', 1792630240);
+INSERT INTO `dt_balance_log` VALUES (4, 3, -10, 90, 'Settlement', '截止1792630240，合计100，费率10.0000%，商户手续费', 'sys', 1792630240);
+INSERT INTO `dt_balance_log` VALUES (5, 31, 1, 9901, 'Settlement', '截止1792630240，合计100，费率1.0000%，码商佣金', 'sys', 1792630240);
+INSERT INTO `dt_balance_log` VALUES (6, 31, -100, 9801, 'CreateOrder', 'AS2208522052549749', 'sys', 1792630340);
+INSERT INTO `dt_balance_log` VALUES (7, 3, 100, 190, 'Settlement', '截止2026-10-22 08:52:30，合计100，费率10.0000%，本金', 'sys', 1792630350);
+INSERT INTO `dt_balance_log` VALUES (8, 3, -10, 180, 'Settlement', '截止2026-10-22 08:52:30，合计100，费率10.0000%，商户手续费', 'sys', 1792630350);
+INSERT INTO `dt_balance_log` VALUES (9, 31, 1, 9802, 'Settlement', '截止2026-10-22 08:52:30，合计100，费率1.0000%，码商佣金', 'sys', 1792630350);
 
 -- ----------------------------
 -- Table structure for dt_bank_cards
@@ -110,7 +103,7 @@ CREATE TABLE `dt_bank_cards`  (
   INDEX `createOrder1`(`bank_code`, `limit_in_max`, `limit_out_max`, `status`) USING BTREE,
   INDEX `task_getBank`(`uid`, `online_account`, `online_password`, `phone_number`, `notify_type`, `notify_device`, `status`) USING BTREE,
   INDEX `task_getBankIsSet`(`uid`, `notify_type`, `notify_device`, `status`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_bank_cards
@@ -133,7 +126,7 @@ CREATE TABLE `dt_bank_user`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idcard`(`idcard`, `uid`) USING BTREE,
   INDEX `getOptions`(`uid`, `status`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 34 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_bank_user
@@ -160,7 +153,7 @@ CREATE TABLE `dt_banks`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `bin`(`bin`) USING BTREE,
   UNIQUE INDEX `code`(`code`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 52 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 45 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_banks
@@ -237,7 +230,7 @@ CREATE TABLE `dt_config`  (
 -- ----------------------------
 INSERT INTO `dt_config` VALUES (1, 1, 'site_name', 'text', '站点名称', '管理面板', '', '', 10, 1, 0, 1789525468);
 INSERT INTO `dt_config` VALUES (2, 1, 'site_status', 'select', '是否闭站', '1', '站点关闭后，用户无法登录', '[{\"id\":\"1\",\"name\":\"否\"},{\"id\":\"2\",\"name\":\"是\"}]', 10, 1, 0, 1789525471);
-INSERT INTO `dt_config` VALUES (3, 1, 'logo', 'image', 'LOGO', '/static/logo.png', '', '', 50, 1, 0, 1791939916);
+INSERT INTO `dt_config` VALUES (3, 1, 'logo', 'image', 'LOGO', 'static/logo.png', '', '', 50, 1, 0, 1791939916);
 INSERT INTO `dt_config` VALUES (4, 1, 'site_stop_msg', 'text', '闭站提示', '系统维护中...', '', '', 10, 1, 0, 1789525475);
 INSERT INTO `dt_config` VALUES (5, 1, 'demo_textarea', 'textarea', '多行文本', '', '', '', 1, -1, 0, 1789525480);
 INSERT INTO `dt_config` VALUES (6, 1, 'captcha_status', 'select', '登录验证码', '2', '', '[{\"id\":\"1\",\"name\":\"启用\"},{\"id\":\"2\",\"name\":\"关闭\"}]', 50, 1, 0, 1791098578);
@@ -255,7 +248,7 @@ CREATE TABLE `dt_config_group`  (
   `update_time` int(10) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_status_sort`(`status`, `sort`) USING BTREE COMMENT '按状态筛选并排序'
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '配置分组' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '配置分组' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_config_group
@@ -282,7 +275,7 @@ CREATE TABLE `dt_device_notify`  (
   `status` tinyint(1) NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `task_online_smscode`(`uid`, `type`, `phone_number`, `time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for dt_editor
@@ -514,18 +507,13 @@ CREATE TABLE `dt_order`  (
   INDEX `idx_bank_card_id`(`bank_card_id`) USING BTREE,
   INDEX `idx_bank_user_id`(`bank_user_id`) USING BTREE,
   INDEX `idx_bank_code`(`bank_code`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 86 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_order
 -- ----------------------------
-INSERT INTO `dt_order` VALUES (19, '442121062650515798', '1792587986', 3, 'bank2bank', 31, '1035664310', 100, 'F3JMSP0U', -1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792587986, 1792588586, 0, 0, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'legacy_backfill');
-INSERT INTO `dt_order` VALUES (20, 'SF2121114852569756', '1792588308', 3, 'bank2bank', 31, '1035664 310', 100, 'U7ES83XZ', -1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792588308, 1792588908, 0, 0, 0, 0, '', '', '', '', '', 'missing');
-INSERT INTO `dt_order` VALUES (21, 'NV2121115699575355', '1792588316', 3, 'bank2bank', 31, '1035664 310', 100, 'KSRL34BE', -1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792588316, 1792588916, 0, 0, 0, 0, '', '', '', '', '', 'missing');
-INSERT INTO `dt_order` VALUES (22, 'KN2121122899485510', '1792588347', 3, 'bank2bank', 31, '1035664 310', 100, 'MCRJVX19', -1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792588348, 1792588948, 0, 0, 0, 0, '', '', '', '', '', 'missing');
-INSERT INTO `dt_order` VALUES (23, 'W62121182549102481', '1792588705', 3, 'bank2bank', 31, '1035664310', 100, 'LAYWOET7', 2, 2, 1792591426, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792588705, 1792589305, 1792591013, 0, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'legacy_backfill');
-INSERT INTO `dt_order` VALUES (24, 'ZF2122032610197529', '1792591406', 3, 'bank2bank', 31, '1035664310', 100, '2O9P0B5Z', 2, 2, 1792595469, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792591406, 1792592006, 1792594124, 0, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'legacy_backfill');
-INSERT INTO `dt_order` VALUES (51, 'O32122573198554810', '1792594651', 3, 'bank2bank', 31, '1035664310', 100, '3FTP9EKB', 1, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792594651, 1792595251, 0, 0, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'created');
+INSERT INTO `dt_order` VALUES (1, '7O2208500949995298', '1792630209', 3, 'bank2bank', 31, '1035664310', 100, 'KYI0TCW4', 2, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792630209, 1792630809, 1792630231, 1792630240, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'created');
+INSERT INTO `dt_order` VALUES (2, 'AS2208522052549749', '1792630340', 3, 'bank2bank', 31, '1035664310', 100, 'F4NDLQP8', 2, 1, 0, 'http://4.test.com/test/notify.php', 'http://4.test.com/test/return.php', 1792630340, 1792630940, 1792630347, 1792630350, 10, 10, 'VCB', '970436', 'Ngân hàng TMCP Ngoại Thương Việt Nam', 'Vietcombank', 'VO THI TUYET HONG', 'created');
 
 -- ----------------------------
 -- Table structure for dt_pay_type
@@ -572,7 +560,7 @@ CREATE TABLE `dt_perms`  (
   UNIQUE INDEX `uk_route_path`(`route_path`) USING BTREE,
   INDEX `idx_module_controller_action`(`module`, `controller`, `action`) USING BTREE COMMENT '模块控制器方法组合索引',
   INDEX `idx_parent_sort`(`parent_id`, `sort`) USING BTREE COMMENT '父级+排序(菜单树/级联删除)'
-) ENGINE = InnoDB AUTO_INCREMENT = 168 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 167 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_perms
@@ -726,7 +714,7 @@ CREATE TABLE `dt_role_perms`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_type_perms_id`(`type`, `perms_id`) USING BTREE COMMENT '角色类型+权限ID唯一索引',
   INDEX `idx_perms_id`(`perms_id`) USING BTREE COMMENT '权限ID索引'
-) ENGINE = InnoDB AUTO_INCREMENT = 1351 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1347 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_role_perms
@@ -949,7 +937,7 @@ CREATE TABLE `dt_upload`  (
   `time` int(10) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_type_time`(`type`, `time`) USING BTREE COMMENT '按类型+时间分页查附件'
-) ENGINE = InnoDB AUTO_INCREMENT = 45 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for dt_user
@@ -966,17 +954,18 @@ CREATE TABLE `dt_user`  (
   `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态 1正常 -1停用',
   `create_time` int(10) NOT NULL DEFAULT 0,
   `update_time` int(10) NOT NULL DEFAULT 0,
+  `rate` decimal(7, 4) NOT NULL DEFAULT 0.0000 COMMENT '百分比费率，四位小数',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `username`(`username`) USING BTREE,
   INDEX `idx_create_time`(`create_time`) USING BTREE COMMENT '注册时间区间筛选'
-) ENGINE = InnoDB AUTO_INCREMENT = 64 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '账号表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '账号表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_user
 -- ----------------------------
-INSERT INTO `dt_user` VALUES (1, 'super', 'admin', '', '$2y$10$x0lw5xHph1Y/7t735FE1Se4O.0ZTR5ayKkJDmzryf8bL243yLCqqm', '', 0, 1, 1652500366, 1791905409);
-INSERT INTO `dt_user` VALUES (2, 'admin', 'super', '', '$2y$10$qaVPRbXHo3/OXxLKgXviiuHwEJny28/nlvJpEl3Iegpt07YNzM3Tm', '', 0, 1, 1652506679, 1791905395);
-INSERT INTO `dt_user` VALUES (3, 'merchant', '测试商户', '', '$2y$10$.ypfEnribqVwP41oRiddiO2qIHaAAjOQDjHxg5RROWika0/TuJT6a', '', 8000, 1, 1791908658, 1792586634);
-INSERT INTO `dt_user` VALUES (31, 'channel', '测试码商', '', '$2y$10$UH9Anz0rttdxpPM50V5UnezixQyhKluBmUuK7ij8lR/W3u3zLq23.', '', 9700, 1, 1792586732, 1792586732);
+INSERT INTO `dt_user` VALUES (1, 'super', 'admin', '', '$2y$10$x0lw5xHph1Y/7t735FE1Se4O.0ZTR5ayKkJDmzryf8bL243yLCqqm', '', 0, 1, 1652500366, 1791905409, 0.0000);
+INSERT INTO `dt_user` VALUES (2, 'admin', 'super', '', '$2y$10$qaVPRbXHo3/OXxLKgXviiuHwEJny28/nlvJpEl3Iegpt07YNzM3Tm', '', 0, 1, 1652506679, 1791905395, 0.0000);
+INSERT INTO `dt_user` VALUES (3, 'merchant', '测试商户', '', '$2y$10$.ypfEnribqVwP41oRiddiO2qIHaAAjOQDjHxg5RROWika0/TuJT6a', '', 180, 1, 1791908658, 1792630116, 10.0000);
+INSERT INTO `dt_user` VALUES (31, 'channel', '测试码商', '', '$2y$10$UH9Anz0rttdxpPM50V5UnezixQyhKluBmUuK7ij8lR/W3u3zLq23.', '', 9802, 1, 1792586732, 1792630105, 1.0000);
 
 SET FOREIGN_KEY_CHECKS = 1;
