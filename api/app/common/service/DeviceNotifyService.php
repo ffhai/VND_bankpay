@@ -4,14 +4,11 @@ declare (strict_types = 1);
 
 namespace app\common\service;
 
-
 use app\common\basics\Service;
 use app\common\enums\StatusEnum;
 use app\common\exception\RequestException;
-use app\common\model\BankCardsModel;
 use app\common\model\DeviceNotifyModel;
-use app\common\model\OrderModel;
-use think\facade\Log;
+use think\facade\Db;
 
 class DeviceNotifyService extends Service
 {
@@ -34,102 +31,25 @@ class DeviceNotifyService extends Service
         }
         return $items->toArray();
     }
-    public static function setPending(array $params){
-        $params['balance'] = \app\common\utils\AmountUtils::integer($params['balance'] ?? 0);
-        $model = new DeviceNotifyModel();
-        $orderModel = new OrderModel();
 
-        $data = [
-            'id'=>$params['id'] ?? 0,
-            'type'=>$params['type'] ?? '',
-            'balance'=>$params['balance'] ?? 0,
-            'card_number'=>$params['card_number'] ?? '',
-            'remark'=>$params['remark'] ?? '',
-            'sms_code'=>$params['sms_code'] ?? '',
-        ];
-        if($data['id'] <= 0){
-            return;
+    public static function setPending(array $params): array
+    {
+        $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $status = filter_var($params['status'] ?? null, FILTER_VALIDATE_INT);
+        if ($id === false || !in_array($status, [StatusEnum::STATUS_2, StatusEnum::STATUS_OFF], true)) {
+            throw new RequestException('推送处理状态参数错误');
         }
-
-        //银行推送
-        if($data['type'] == DeviceNotifyModel::TYPE_BANK_TRADE){
-            if($data['balance'] == 0 && empty($data['card_number']) && empty($data['remark'])){
-                $data['status'] = StatusEnum::STATUS_2;
-            }else{
-                $orderItem = false;
-                //金额和 附言匹配
-                if(!$orderItem && $data['balance'] > 0 && strlen($data['remark']) == config('order.ps_length')){
-                    $bankCardItem = BankCardsService::getItemByBankNumber($data['card_number']);
-                    if($bankCardItem) {
-                        $amount = $data['balance'] - $bankCardItem['balance'];
-                        $orderItem = $orderModel->where('ps','=',$data['remark'])->field('order_id')->order('id desc')->find();
-                        if($orderItem['amount'] != $amount){
-                            $orderItem = false;
-                        }
-                    }
-                }
-                //金额、卡号匹配
-                if(!$orderItem && !empty($data['card_number']) && $data['balance'] > 0){
-                    $bankCardItem = BankCardsService::getItemByBankNumber($data['card_number']);
-                    if($bankCardItem){
-                        $amount = $data['balance'] - $bankCardItem['balance'];
-                        if($amount > 0){
-                            $orderItem = $orderModel
-                                ->where('bank_number','=',$data['card_number'])
-                                ->where('amount','=',$amount)
-                                ->field('order_id')
-                                ->order('id desc')->find();
-                        }
-                    }
-                }
-
-                if($orderItem){
-                    //匹配成功
-                    $data['status'] = StatusEnum::STATUS_2;
-                    $data['order_id'] = $orderItem['order_id'];
-
-                    try {
-                        $confirmation = OrderService::confirmed(['order_id'=>$orderItem['order_id']],[]);
-                    } catch (RequestException $e) {
-                        if (empty($e->data['manual_review'])) {
-                            throw $e;
-                        }
-                        $data['status'] = StatusEnum::STATUS_OFF;
-                        $confirmation = $e->data;
-                        Log::warning('设备通知确认异常：' . json_encode($confirmation));
-                    }
-                }else{
-                    //未匹配到订单
-                    $data['status'] = StatusEnum::STATUS_OFF;
-                }
-
-                //更新卡号余额
-                if(!empty($data['card_number']) && $data['balance'] > 0){
-                    BankCardsModel::update([
-                        'balance'=>$data['balance'],
-                        'update_time'=>time()
-                    ],['bank_number'=>$data['card_number']]);
-                }
+        return Db::transaction(function () use ($id, $status): array {
+            $notify = DeviceNotifyModel::where('id', $id)->lock(true)->find();
+            if (!$notify) {
+                throw new RequestException('设备推送不存在');
             }
-        }
-
-        //短信
-        if($data['type'] == DeviceNotifyModel::TYPE_SMS_CODE){
-            if(!empty($data['sms_code'])){
-                $data['status'] = StatusEnum::STATUS_2;
-            }else{
-                $data['status'] = StatusEnum::STATUS_OFF;
+            // 只回报处理结果，不再解析交易、匹配订单或修改银行卡余额。
+            // 已完成的推送不被迟到的失败回报覆盖。
+            if ((int) $notify['status'] === StatusEnum::STATUS_1) {
+                $notify->save(['status' => $status]);
             }
-        }
-
-        if($data['type'] == DeviceNotifyModel::TYPE_OTHER){
-            $data['status'] = StatusEnum::STATUS_2;
-        }
-
-        $model->where('id','=',$data['id'])->update($data);
-        if (isset($confirmation)) {
-            $data['confirmation'] = $confirmation;
-        }
-        return $data;
+            return ['id' => $id, 'status' => (int) $notify['status']];
+        });
     }
 }

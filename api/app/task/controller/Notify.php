@@ -3,7 +3,7 @@ namespace app\task\controller;
 
 use app\common\service\DeviceNotifyService;
 use app\common\utils\AjaxUtils;
-use think\App;
+use app\task\service\SmsTradeService;
 use think\facade\Log;
 
 
@@ -43,6 +43,11 @@ class Notify extends \app\common\basics\Api
         $params = $this->request->param();
         $data = DeviceNotifyService::setPending($params);
         return AjaxUtils::success($data);
+    }
+
+    public function addSmsTrade(){
+        $data = SmsTradeService::receive($this->request->param());
+        return AjaxUtils::success('success', $data);
     }
 
 

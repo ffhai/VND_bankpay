@@ -83,18 +83,18 @@ namespace {
             catch (RequestException $e) { $rejected=!empty($e->data['manual_review']); }
             checkConfirmation($rejected && $queueCount()===$count && OrderModel::where('order_id',$blocked['order_id'])->find()->toArray()===$blocked, 'invalid/refunded/settled state is unchanged and requires review');
         }
-        $notificationId=Db::name('device_notify')->insertGetId(['uid'=>0,'content'=>$tag,'status'=>0]);
+        $notificationId=Db::name('device_notify')->insertGetId(['uid'=>0,'content'=>$tag,'status'=>1]);
         $notificationIds[]=$notificationId;
         $notification=\app\common\service\DeviceNotifyService::setPending([
-            'id'=>$notificationId, 'type'=>'BANK_TRADE', 'remark'=>$blocked['ps'],
+            'id'=>$notificationId, 'status'=>-1,
         ]);
-        checkConfirmation(!empty($notification['confirmation']['manual_review']) && (int)Db::name('device_notify')->where('id',$notificationId)->value('status')===2 && $queueCount()===$count, 'automatic notification persists failure and returns manual-review reason');
-        $notificationId=Db::name('device_notify')->insertGetId(['uid'=>0,'content'=>$tag,'status'=>0]);
+        checkConfirmation($notification['status']===-1 && $queueCount()===$count, 'failed decoding only records notification state without confirming an order');
+        $notificationId=Db::name('device_notify')->insertGetId(['uid'=>0,'content'=>$tag,'status'=>1]);
         $notificationIds[]=$notificationId;
         $notification=\app\common\service\DeviceNotifyService::setPending([
-            'id'=>$notificationId, 'type'=>'BANK_TRADE', 'remark'=>$order['ps'],
+            'id'=>$notificationId, 'status'=>2,
         ]);
-        checkConfirmation($notification['confirmation']['result']==='already_processed' && $queueCount()===$count, 'duplicate automatic notification does not enqueue again');
+        checkConfirmation($notification['status']===2 && $queueCount()===$count, 'processed notification does not enqueue order callbacks');
         $foreign=$makeOrder('foreign');
         $rejected=false;
         try { OrderService::confirmed(['order_id'=>$foreign['order_id']],['id'=>1,'type'=>'channel']); }

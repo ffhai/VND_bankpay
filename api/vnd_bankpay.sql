@@ -11,7 +11,7 @@
  Target Server Version : 50726
  File Encoding         : 65001
 
- Date: 22/10/2026 11:57:08
+ Date: 22/10/2026 12:51:44
 */
 
 SET NAMES utf8mb4;
@@ -568,7 +568,7 @@ CREATE TABLE `dt_perms`  (
   UNIQUE INDEX `uk_route_path`(`route_path`) USING BTREE,
   INDEX `idx_module_controller_action`(`module`, `controller`, `action`) USING BTREE COMMENT '模块控制器方法组合索引',
   INDEX `idx_parent_sort`(`parent_id`, `sort`) USING BTREE COMMENT '父级+排序(菜单树/级联删除)'
-) ENGINE = InnoDB AUTO_INCREMENT = 178 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 179 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限节点表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_perms
@@ -719,6 +719,7 @@ INSERT INTO `dt_perms` VALUES (174, 0, '设备推送', 'group', NULL, '/admin/de
 INSERT INTO `dt_perms` VALUES (175, 174, '短信交易', 'page', NULL, '/admin/device/smsTrade', 'admin', 'SmsTrade', '', 0, 1, 1792640931, 1792640931);
 INSERT INTO `dt_perms` VALUES (176, 175, '查询', 'action', 'admin.smstrade.items', NULL, 'admin', 'SmsTrade', 'items', 0, 1, 1792640931, 1792640931);
 INSERT INTO `dt_perms` VALUES (177, 175, '删除', 'action', 'admin.smstrade.del', NULL, 'admin', 'SmsTrade', 'del', 0, 1, 1792640931, 1792640931);
+INSERT INTO `dt_perms` VALUES (178, 147, '接收短信交易', 'api', 'task.notify.addsmstrade', NULL, 'task', 'Notify', 'addSmsTrade', 0, 1, 1792644481, 1792644481);
 
 -- ----------------------------
 -- Table structure for dt_role_perms
@@ -733,7 +734,7 @@ CREATE TABLE `dt_role_perms`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_type_perms_id`(`type`, `perms_id`) USING BTREE COMMENT '角色类型+权限ID唯一索引',
   INDEX `idx_perms_id`(`perms_id`) USING BTREE COMMENT '权限ID索引'
-) ENGINE = InnoDB AUTO_INCREMENT = 1360 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1361 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色-权限关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_role_perms
@@ -927,6 +928,7 @@ INSERT INTO `dt_role_perms` VALUES (1355, 'admin', 175, 1792640931, 1792640931);
 INSERT INTO `dt_role_perms` VALUES (1356, 'admin', 177, 1792640931, 1792640931);
 INSERT INTO `dt_role_perms` VALUES (1357, 'super', 176, 1792640931, 1792640931);
 INSERT INTO `dt_role_perms` VALUES (1358, 'admin', 176, 1792640931, 1792640931);
+INSERT INTO `dt_role_perms` VALUES (1360, 'task', 178, 1792644481, 1792644481);
 
 -- ----------------------------
 -- Table structure for dt_roles
@@ -955,6 +957,20 @@ INSERT INTO `dt_roles` VALUES (13, 'merchant', '商户', 1, '', 1792585801, 1792
 INSERT INTO `dt_roles` VALUES (14, 'task', '任务服务', 1, '', 1792585801, 1792585801);
 
 -- ----------------------------
+-- Table structure for dt_sms_code
+-- ----------------------------
+DROP TABLE IF EXISTS `dt_sms_code`;
+CREATE TABLE `dt_sms_code`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `notify_id` int(10) NULL DEFAULT 0 COMMENT '设备推送ID',
+  `phone_number` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '手机号码',
+  `verify_code` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT '' COMMENT '验证码',
+  `time` int(10) NULL DEFAULT 0,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `notify_id`(`notify_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
 -- Table structure for dt_sms_trade
 -- ----------------------------
 DROP TABLE IF EXISTS `dt_sms_trade`;
@@ -969,7 +985,7 @@ CREATE TABLE `dt_sms_trade`  (
   `status` tinyint(1) NULL DEFAULT 1 COMMENT '状态',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `notify_id`(`notify_id`) USING BTREE
-) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for dt_upload
