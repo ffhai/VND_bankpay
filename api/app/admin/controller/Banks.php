@@ -9,6 +9,13 @@ use think\App;
 
 class Banks extends CrudController
 {
+    use \app\common\basics\CrudActions {
+        items as public;
+        add as public;
+        edit as public;
+        getOptions as public;
+    }
+
     public function del(){
         $ids = $this->request->param('ids/a');
         $this->validate->idsCheck($ids);

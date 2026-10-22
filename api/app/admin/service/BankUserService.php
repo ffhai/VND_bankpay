@@ -26,7 +26,7 @@ class BankUserService extends Service
                 'user' =>['id','username'],
             ],'left')
             ->where($searchWhere)
-            ->order('id desc')
+            ->order('bank_user_model.id', 'desc')
             ->paginate([
                 'page'      => $get['page']  ?? 1,
                 'list_rows' => $get['pagesize'] ?? 20

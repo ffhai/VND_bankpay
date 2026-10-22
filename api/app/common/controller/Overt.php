@@ -7,7 +7,7 @@ use app\common\model\ConfigModel;
 use app\common\service\LoginService;
 use app\common\utils\AjaxUtils;
 use app\common\utils\UrlUtils;
-use jolalau\captcha\facade\CaptchaApi;
+use app\common\service\CaptchaService;
 use think\response\Json;
 
 
@@ -16,7 +16,7 @@ class Overt extends Auth
     protected $notNeedLogin = ['captcha','login','init'];
 
     public function captcha(){
-        $data = CaptchaApi::create();
+        $data = app(CaptchaService::class)->create();
         $data=array(
             'key'=>$data['key'],
             'data'=>str_replace("\r\n","",$data['base64'])
@@ -36,7 +36,7 @@ class Overt extends Auth
             if(empty($params['captcha'])){
                 return AjaxUtils::error("请输入验证码");
             }
-            if ( ! CaptchaApi::check($params['captcha'],$params['captcha_key'])) {
+            if ( ! app(CaptchaService::class)->check((string) $params['captcha'], (string) $params['captcha_key'])) {
                 return AjaxUtils::error("验证码不正确");
             }
         }

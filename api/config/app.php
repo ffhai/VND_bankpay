@@ -30,7 +30,6 @@ return [
     // 显示错误信息
     'show_error_msg'   => true,
 
-    "auto_multi-app"=>true,//开启多应用
     "app_express"=>true,//开启应用快速访问
 
 ];

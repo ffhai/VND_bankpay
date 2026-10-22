@@ -154,7 +154,7 @@ class BalanceService extends Service
             $query->where('balance_log_model.user_id', (int) $userItem['id']);
         }
 
-        $lists = $query->order('id desc')->paginate([
+        $lists = $query->order('balance_log_model.id', 'desc')->paginate([
             'page' => $get['page'] ?? 1,
             'list_rows' => $get['pagesize'] ?? 20,
         ])->toArray();

@@ -8,7 +8,7 @@ use Throwable;
 
 class RequestException extends BaseException
 {
-    public function __construct($message = '', $code = 0, $data = [], Throwable $previous = null)
+    public function __construct($message = '', $code = 0, $data = [], ?Throwable $previous = null)
     {
         $this->data     = $data;
         $this->code     = $code    ?: CodeEnum::ERROR;;

@@ -19,7 +19,7 @@ class UrlUtils
      * @param string $url (相对路径)
      * @return string     (绝对路径)
      */
-    public static function toAbsoluteUrl($url = '',string $domain = null): string
+    public static function toAbsoluteUrl($url = '',?string $domain = null): string
     {
         if($domain == null){
             $domain = request()->domain();
@@ -96,8 +96,6 @@ class UrlUtils
         $rootPath = str_replace('\\', '/', $rootPath) ;
         return strval($rootPath);
     }
-
-
 
     /**
      * 富文本Src地址提取

@@ -8,11 +8,14 @@ use app\common\utils\AjaxUtils;
 use app\channel\validate\OrderValidate;
 use think\App;
 use think\facade\Log;
-use think\response\Json;
 
 
 class Order extends CrudController
 {
+    use \app\common\basics\CrudActions {
+        items as public;
+    }
+
     public function __construct(App $app)
     {
         parent::__construct($app);

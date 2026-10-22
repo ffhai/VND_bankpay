@@ -11,7 +11,7 @@
  Target Server Version : 50726
  File Encoding         : 65001
 
- Date: 22/10/2026 13:41:33
+ Date: 22/10/2026 17:55:11
 */
 
 SET NAMES utf8mb4;
@@ -33,7 +33,7 @@ CREATE TABLE `dt_app_list`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `appid`(`appid`) USING BTREE,
   INDEX `idx_create_time`(`create_time`) USING BTREE COMMENT '创建时间区间筛选'
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '应用接口' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '应用接口' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_app_list
@@ -133,7 +133,7 @@ CREATE TABLE `dt_bank_user`  (
 -- ----------------------------
 -- Records of dt_bank_user
 -- ----------------------------
-INSERT INTO `dt_bank_user` VALUES (10, 31, 'VO THI TUYET HONG', '11223344', '', 1, 1792587590, 1792587865);
+INSERT INTO `dt_bank_user` VALUES (10, 31, 'VO THI TUYET HONG', '11223344', '', 1, 1792587590, 1792662829);
 
 -- ----------------------------
 -- Table structure for dt_banks
@@ -315,7 +315,7 @@ CREATE TABLE `dt_login_log`  (
   `ip` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT 'IPv4/IPv6',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_uid_time`(`uid`, `time`) USING BTREE COMMENT '按用户+时间查登录记录'
-) ENGINE = InnoDB AUTO_INCREMENT = 164 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '登录记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 165 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '登录记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_login_log
@@ -474,6 +474,7 @@ INSERT INTO `dt_login_log` VALUES (160, 31, '', 1792632965, 1, '', '127.0.0.1');
 INSERT INTO `dt_login_log` VALUES (161, 3, '', 1792634036, 1, '', '127.0.0.1');
 INSERT INTO `dt_login_log` VALUES (162, 1, '', 1792638579, 1, '', '127.0.0.1');
 INSERT INTO `dt_login_log` VALUES (163, 31, '', 1792639355, 1, '', '127.0.0.1');
+INSERT INTO `dt_login_log` VALUES (164, 1, '', 1792662799, 1, '', '127.0.0.1');
 
 -- ----------------------------
 -- Table structure for dt_order
@@ -516,7 +517,7 @@ CREATE TABLE `dt_order`  (
   INDEX `idx_bank_card_id`(`bank_card_id`) USING BTREE,
   INDEX `idx_bank_user_id`(`bank_user_id`) USING BTREE,
   INDEX `idx_bank_code`(`bank_code`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of dt_order
@@ -618,11 +619,9 @@ INSERT INTO `dt_perms` VALUES (46, 39, '删除', 'action', 'admin.configlist.del
 INSERT INTO `dt_perms` VALUES (47, 0, '财务管理', 'group', NULL, '/admin/finance', 'admin', '', '', 0, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (48, 47, '余额记录', 'page', NULL, '/admin/finance/balance', 'admin', 'Balance', '', 0, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (49, 48, '列表', 'action', 'admin.balance.items', NULL, 'admin', 'Balance', 'items', 0, 1, 0, 0);
-INSERT INTO `dt_perms` VALUES (51, 48, '删除', 'action', 'admin.balance.del', NULL, 'admin', 'Balance', 'del', 0, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (52, 29, 'getOptions', 'api', 'admin.member.getoptions', NULL, 'admin', 'Member', 'getOptions', 0, 1, 0, 1792123469);
 INSERT INTO `dt_perms` VALUES (53, 0, '个人中心', 'group', NULL, '/user', 'user', '', '', 0, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (54, 53, '我的余额', 'page', NULL, '/user/balance', 'user', 'Balance', '', 0, 1, 0, 0);
-INSERT INTO `dt_perms` VALUES (55, 54, '余额信息', 'action', 'user.balance.info', NULL, 'user', 'Balance', 'info', 0, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (56, 54, '交易记录', 'action', 'user.balance.items', NULL, 'user', 'Balance', 'items', 0, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (57, 29, '调整余额', 'action', 'admin.member.adjust', NULL, 'admin', 'Member', 'adjust', 0, 1, 0, 0);
 INSERT INTO `dt_perms` VALUES (58, 2, '清理缓存', 'action', 'admin.config.clearcache', NULL, 'admin', 'Config', 'clearCache', 0, 1, 1791938366, 1791938366);
@@ -657,7 +656,6 @@ INSERT INTO `dt_perms` VALUES (104, 102, '新增', 'action', 'channel.bankcards.
 INSERT INTO `dt_perms` VALUES (105, 102, '编辑', 'action', 'channel.bankcards.edit', NULL, 'channel', 'BankCards', 'edit', 0, 1, 1792585801, 1792585801);
 INSERT INTO `dt_perms` VALUES (106, 102, '删除', 'action', 'channel.bankcards.del', NULL, 'channel', 'BankCards', 'del', 0, 1, 1792585801, 1792585801);
 INSERT INTO `dt_perms` VALUES (107, 97, 'getOptions', 'api', 'channel.bankuser.getoptions', NULL, 'channel', 'BankUser', 'getOptions', 0, 1, 1792585801, 1792585801);
-INSERT INTO `dt_perms` VALUES (108, 102, 'getOptions', 'api', 'channel.bankcards.getoptions', NULL, 'channel', 'BankCards', 'getOptions', 0, 1, 1792585801, 1792585801);
 INSERT INTO `dt_perms` VALUES (109, 96, '银行列表', 'group', NULL, NULL, 'channel', 'Banks', '', 0, 1, 1792585801, 1792585801);
 INSERT INTO `dt_perms` VALUES (110, 109, 'getOptions', 'api', 'channel.banks.getoptions', NULL, 'channel', 'Banks', 'getOptions', 0, 1, 1792585801, 1792585801);
 INSERT INTO `dt_perms` VALUES (111, 0, '码商设备管理', 'group', NULL, '/channel/device', 'channel', '', '', 1999, 1, 1792585801, 1792585801);
@@ -743,7 +741,6 @@ CREATE TABLE `dt_role_perms`  (
 -- ----------------------------
 -- Records of dt_role_perms
 -- ----------------------------
-INSERT INTO `dt_role_perms` VALUES (777, 'user', 55, 1791098594, 1791098594);
 INSERT INTO `dt_role_perms` VALUES (778, 'user', 56, 1791098594, 1791098594);
 INSERT INTO `dt_role_perms` VALUES (781, 'super', 5, 1791938525, 1791938525);
 INSERT INTO `dt_role_perms` VALUES (782, 'super', 6, 1791938525, 1791938525);
@@ -775,7 +772,6 @@ INSERT INTO `dt_role_perms` VALUES (807, 'super', 38, 1791938525, 1791938525);
 INSERT INTO `dt_role_perms` VALUES (808, 'super', 40, 1791938525, 1791938525);
 INSERT INTO `dt_role_perms` VALUES (809, 'super', 41, 1791938525, 1791938525);
 INSERT INTO `dt_role_perms` VALUES (810, 'super', 49, 1791938525, 1791938525);
-INSERT INTO `dt_role_perms` VALUES (811, 'super', 51, 1791938525, 1791938525);
 INSERT INTO `dt_role_perms` VALUES (812, 'super', 52, 1791938525, 1791938525);
 INSERT INTO `dt_role_perms` VALUES (813, 'super', 57, 1791938525, 1791938525);
 INSERT INTO `dt_role_perms` VALUES (814, 'super', 58, 1791938525, 1791938525);
@@ -878,7 +874,6 @@ INSERT INTO `dt_role_perms` VALUES (1284, 'super', 162, 1792588923, 1792588923);
 INSERT INTO `dt_role_perms` VALUES (1285, 'admin', 162, 1792588923, 1792588923);
 INSERT INTO `dt_role_perms` VALUES (1303, 'channel', 53, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1304, 'channel', 54, 1792591269, 1792591269);
-INSERT INTO `dt_role_perms` VALUES (1305, 'channel', 55, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1306, 'channel', 56, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1307, 'channel', 120, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1308, 'channel', 96, 1792591269, 1792591269);
@@ -893,7 +888,6 @@ INSERT INTO `dt_role_perms` VALUES (1316, 'channel', 103, 1792591269, 1792591269
 INSERT INTO `dt_role_perms` VALUES (1317, 'channel', 104, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1318, 'channel', 105, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1319, 'channel', 106, 1792591269, 1792591269);
-INSERT INTO `dt_role_perms` VALUES (1320, 'channel', 108, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1321, 'channel', 163, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1322, 'channel', 109, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1323, 'channel', 110, 1792591269, 1792591269);
@@ -908,7 +902,6 @@ INSERT INTO `dt_role_perms` VALUES (1331, 'channel', 113, 1792591269, 1792591269
 INSERT INTO `dt_role_perms` VALUES (1332, 'channel', 148, 1792591269, 1792591269);
 INSERT INTO `dt_role_perms` VALUES (1333, 'merchant', 53, 1792591367, 1792591367);
 INSERT INTO `dt_role_perms` VALUES (1334, 'merchant', 54, 1792591367, 1792591367);
-INSERT INTO `dt_role_perms` VALUES (1335, 'merchant', 55, 1792591367, 1792591367);
 INSERT INTO `dt_role_perms` VALUES (1336, 'merchant', 56, 1792591367, 1792591367);
 INSERT INTO `dt_role_perms` VALUES (1337, 'merchant', 120, 1792591367, 1792591367);
 INSERT INTO `dt_role_perms` VALUES (1338, 'merchant', 136, 1792591367, 1792591367);

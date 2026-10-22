@@ -8,11 +8,14 @@ use app\common\utils\AjaxUtils;
 use app\admin\validate\OrderValidate;
 use think\App;
 use think\facade\Log;
-use think\response\Json;
 
 
 class Order extends CrudController
 {
+    use \app\common\basics\CrudActions {
+        items as public;
+    }
+
     public function __construct(App $app)
     {
         parent::__construct($app);
@@ -39,11 +42,4 @@ class Order extends CrudController
         return AjaxUtils::error($ret);
     }
 
-    public function del(){
-        $ids = $this->request->param('ids/a');
-        $this->validate->idsCheck($ids);
-        Log::info('管理员删除订单：'.'uid->'.$this->userItem['id'].' '.json_encode($ids));
-        $this->service::del($ids,$this->userItem);
-        return AjaxUtils::success($ids);
-    }
 }

@@ -5,9 +5,6 @@ use app\common\basics\CrudController;
 use app\common\enums\StatusEnum;
 use app\common\model\AppListModel;
 use app\common\utils\AjaxUtils;
-use app\admin\service\BanksService;
-use app\admin\validate\BanksValidate;
-use think\App;
 
 
 class Device extends CrudController
@@ -23,7 +20,7 @@ class Device extends CrudController
         $data['appid'] = $item['appid'];
         $data['secret'] = $item['secret'];
 
-        $data['qrcode'] = \tekintian\TekinQR::getQRImg(json_encode($data), 10, null, 1);
+        $data['qrcode'] = \tekintian\TekinQR::getQRImg(json_encode($data), 10, '', 1);
 
         return AjaxUtils::success('success',$data);
     }

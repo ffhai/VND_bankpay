@@ -41,7 +41,7 @@ function get_rand_str($length){
  * @return string
  */
 function create_order_id(){
-    $osn = date('dHis').substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 8);
+    $osn = date('dHis').substr(implode('', array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, 8);
     $osn=strtoupper(get_rand_str(2)).$osn;
     return $osn;
 }
@@ -144,7 +144,8 @@ function check_action_exists($module, $controller, $action)
             return false;
         }
 
-        return $reflection->getMethod($action)->getName() === $action;
+        $method = $reflection->getMethod($action);
+        return $method->isPublic() && !$method->isConstructor() && $method->getName() === $action;
     } catch (\Throwable $e) {
         return false;
     }

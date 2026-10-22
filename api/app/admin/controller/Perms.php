@@ -3,7 +3,6 @@
 namespace app\admin\controller;
 
 use app\common\basics\CrudController;
-use app\common\model\PermsModel;
 use app\admin\service\PermsService;
 use app\common\utils\AjaxUtils;
 use app\admin\validate\PermsValidate;
@@ -13,12 +12,15 @@ use think\response\Json;
 
 class Perms extends CrudController
 {
+    use \app\common\basics\CrudActions {
+        del as public;
+    }
+
     public function __construct(App $app)
     {
         parent::__construct($app);
         $this->service = new PermsService();
         $this->validate = new PermsValidate();
-        $this->model = new PermsModel();
     }
     public function items():Json
     {

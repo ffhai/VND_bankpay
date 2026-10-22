@@ -4,7 +4,6 @@ namespace app\openapi\controller;
 use app\BaseController;
 use app\common\model\OrderModel;
 use app\common\utils\AjaxUtils;
-use think\App;
 use think\facade\Cache;
 use think\facade\Log;
 use think\facade\View;

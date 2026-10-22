@@ -39,7 +39,7 @@ class BankCardsService extends Service
             ],'left')
             ->where('bank_cards_model.uid','=',$userItem['id'])
             ->where($searchWhere)
-            ->order('id desc')
+            ->order('bank_cards_model.id', 'desc')
             ->paginate([
                 'page'      => $get['page']  ?? 1,
                 'list_rows' => $get['pagesize'] ?? 20

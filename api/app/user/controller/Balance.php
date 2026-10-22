@@ -18,9 +18,7 @@ class Balance extends Auth
      */
     protected $notNeedPower = ['types'];
 
-    /**
-     * 交易类型选项（来源：BalanceService::$typeMap 静态配置）
-     */
+
     public function types()
     {
         return AjaxUtils::success(BalanceService::getTypeOptions());

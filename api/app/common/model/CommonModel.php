@@ -7,9 +7,6 @@ class CommonModel extends Model
 {
     protected $schema = [];
 
-    public $msg = '';//统一返回消息
-    public $data = [];//统一返回数据
-
     /**
      * @param $id
      * @param int $cache_time 缓存时间 整数 秒

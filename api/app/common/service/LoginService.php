@@ -38,6 +38,9 @@ class LoginService
     protected static function getJwtKey(){
         $key = (string) config('jwt.secret', '');
         if (!empty($key)) {
+            if (strlen($key) < 32) {
+                throw new \RuntimeException('JWT.SECRET 至少需要 32 字节，请更新配置并重新登录');
+            }
             return $key;
         }
 
@@ -49,8 +52,11 @@ class LoginService
             $key = trim((string) file_get_contents($keyFile));
         }
         if (empty($key)) {
-            $key = md5(get_rand_str(32) . get_rand_str(32));
+            $key = bin2hex(random_bytes(32));
             file_put_contents($keyFile, $key, LOCK_EX);
+        }
+        if (strlen($key) < 32) {
+            throw new \RuntimeException('runtime/jwt_key 至少需要 32 字节，请更新密钥并重新登录');
         }
         return $key;
     }
@@ -129,7 +135,7 @@ class LoginService
         }
 
         $userModel = new UserModel();
-        $userItem = $userModel->where('username','=',$username)->field($userModel->fields)->find();
+        $userItem = $userModel->where('username','=',$username)->field($userModel->getFields())->find();
         if(!$userItem || $userItem['status'] != StatusEnum::STATUS_1){
             throw new RequestException('账号不存在或已停用！');
         }

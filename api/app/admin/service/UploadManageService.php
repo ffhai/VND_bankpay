@@ -68,8 +68,12 @@ class UploadManageService extends Service
         }
         foreach ($rows as $row) {
             $relative = $paths[$row['id']];
-            if ($disk->has($relative) && !$disk->delete($relative)) {
-                throw new RequestException('文件删除失败，请稍后重试');
+            try {
+                if ($disk->fileExists($relative)) {
+                    $disk->delete($relative);
+                }
+            } catch (\League\Flysystem\FilesystemException $e) {
+                throw new RequestException('文件删除失败，请稍后重试', 0, [], $e);
             }
             $row->delete();
         }

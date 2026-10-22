@@ -1,7 +1,6 @@
 <?php
 namespace app\common\model;
 
-use think\model\relation\HasOne;
 
 class RolesModel extends CommonModel
 {

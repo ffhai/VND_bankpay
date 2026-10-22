@@ -9,6 +9,10 @@ use think\App;
 
 class Banks extends CrudController
 {
+    use \app\common\basics\CrudActions {
+        getOptions as public;
+    }
+
     public function __construct(App $app)
     {
         parent::__construct($app);

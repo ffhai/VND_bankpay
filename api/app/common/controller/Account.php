@@ -2,18 +2,16 @@
 namespace app\common\controller;
 
 use app\common\basics\Auth;
-use app\common\model\EditorModel;
 use app\common\service\UploadService;
 use app\common\model\UserModel;
 use app\common\service\LoginService;
 use app\common\service\PermsAccessService;
 use app\common\utils\AjaxUtils;
-use think\App;
 
 
 class Account extends Auth
 {
-    protected $notNeedPower = ['info','logout','password','notice','uploadinfo','upload','getRoutes'];
+    protected $notNeedPower = ['info','logout','password','uploadinfo','upload','getRoutes'];
     public function info(){
         $userinfo=array();
         $userinfo['uid']=$this->userItem['id'];
@@ -59,8 +57,8 @@ class Account extends Auth
     }
      */
     public function password(){
-        $password_old=$this->request->param('password_old');
-        $password_new=$this->request->param('password_new');
+        $password_old=$this->request->param('password_old/s', '');
+        $password_new=$this->request->param('password_new/s', '');
 
         if(empty($password_old)){
             return AjaxUtils::error("请输入原密码");
@@ -90,12 +88,6 @@ class Account extends Auth
         }
     }
 
-    public function notice(){
-
-        $notice=new EditorModel();
-        $data=$notice->getContentByKey('notice');
-        return AjaxUtils::success("获取成功",['content'=>$data]);
-    }
 
     //获取上传地址
     public function uploadinfo(){

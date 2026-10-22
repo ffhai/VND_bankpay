@@ -7,7 +7,6 @@ namespace app\admin\controller;
 use app\common\basics\CrudController;
 use app\common\service\BalanceService;
 use app\common\utils\AjaxUtils;
-use think\App;
 use think\response\Json;
 
 /**
@@ -38,16 +37,4 @@ class Balance extends CrudController
         return AjaxUtils::success(BalanceService::getTypeOptions());
     }
 
-    /**
-     * 删除交易记录
-     */
-    public function del()
-    {
-        // $ids = $this->request->param('ids/a');
-        // if (empty($ids)) {
-        //     return AjaxUtils::error('请选择要删除的记录');
-        // }
-        // BalanceService::del($ids);
-        // return AjaxUtils::success('删除成功');
-    }
 }

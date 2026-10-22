@@ -26,7 +26,7 @@ class DeviceNotifyService extends Service
                 'user'=>['id','username']
             ])
             ->where($searchWhere)
-            ->order('id desc')
+            ->order('device_notify_model.id', 'desc')
             ->paginate([
                 'page'      => $get['page']  ?? 1,
                 'list_rows' => $get['pagesize'] ?? 20

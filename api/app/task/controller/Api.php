@@ -4,10 +4,8 @@ use app\common\model\OrderModel;
 use think\facade\Log;
 
 
-use app\BaseController;
 use app\common\utils\AjaxUtils;
 use app\task\service\TaskService;
-use think\App;
 
 
 class Api extends \app\common\basics\Api

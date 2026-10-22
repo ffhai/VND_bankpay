@@ -9,6 +9,11 @@ use think\App;
 
 class SmsTrade extends CrudController
 {
+    use \app\common\basics\CrudActions {
+        items as public;
+        del as public;
+    }
+
     public function __construct(App $app)
     {
         parent::__construct($app);

@@ -24,7 +24,7 @@ class AppListService extends Service
         $lists = $model
             ->withJoin('user')
             ->where($where)
-            ->order('id desc')
+            ->order('app_list_model.id', 'desc')
             ->paginate([
                 'page'      => $get['page']  ?? 1,
                 'list_rows' => $get['pagesize'] ?? 20

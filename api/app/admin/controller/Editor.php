@@ -6,7 +6,6 @@ use app\common\basics\CrudController;
 use app\common\model\EditorModel;
 use app\common\utils\AjaxUtils;
 use app\common\utils\UrlUtils;
-use think\App;
 use think\response\Json;
 
 
@@ -38,7 +37,5 @@ class Editor extends CrudController
         }
         return AjaxUtils::success("保存成功");
     }
-
-
 
 }

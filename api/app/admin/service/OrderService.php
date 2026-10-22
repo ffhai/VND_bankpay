@@ -20,7 +20,6 @@ class OrderService extends Service
                 'status@order_model.status',
                 'trade_uid@order_model.trade_uid',
                 'channel_uid@order_model.channel_uid',
-                'channel_uid@order_model.channel_uid',
                 'bank_number@order_model.bank_number',
             ],
             'datetime' => ['time@order_model.create_time'],
@@ -45,7 +44,7 @@ class OrderService extends Service
         $amount = $model
             ->withJoin(['trade','channelUser'])
             ->where($searchWhere)
-            ->sum('amount');
+            ->sum('order_model.amount');
 
         foreach ($lists['data'] as &$item) {
             $item['create_time'] = TimeUtils::formatTime($item['create_time']);

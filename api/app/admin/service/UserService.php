@@ -31,7 +31,7 @@ class UserService extends Service
             ->withoutField(['password'])
             ->withJoin(['role'],'LEFT')
             ->where($where)
-            ->order('id desc')
+            ->order('user_model.id', 'desc')
             ->paginate([
                 'page'      => $get['page']  ?? 1,
                 'list_rows' => $get['pagesize'] ?? 20

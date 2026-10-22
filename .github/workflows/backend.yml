@@ -1,0 +1,25 @@
+name: Backend
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ctype, curl, fileinfo, gd, iconv, mbstring, pdo_mysql, redis
+          coverage: none
+      - run: composer validate --strict --no-check-publish
+      - run: composer install --prefer-dist --no-interaction
+      - run: composer check-platform-reqs
+      - run: find app config route extend public -name '*.php' -not -path 'public/storage/*' -print0 | xargs -0 -n1 -P4 php -l
+      - run: php think version

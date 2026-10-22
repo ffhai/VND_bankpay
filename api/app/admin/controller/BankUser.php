@@ -9,10 +9,10 @@ use think\App;
 
 class BankUser extends CrudController
 {
-    // 禁用父类继承的新增入口，包括超级管理员访问。
-    public function add()
-    {
-        abort(404, '不支持新增');
+    use \app\common\basics\CrudActions {
+        items as public;
+        edit as public;
+        getOptions as public;
     }
 
     public function del(){

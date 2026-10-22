@@ -2,17 +2,22 @@
 //下级
 namespace app\admin\controller;
 
-use app\common\basics\Auth;
 use app\common\basics\CrudController;
 use app\admin\service\RolesService;
-use app\common\utils\AjaxUtils;
 use app\admin\validate\RolesValidate;
 use think\App;
-use think\response\Json;
 
 
 class Roles extends CrudController
 {
+    use \app\common\basics\CrudActions {
+        items as public;
+        add as public;
+        edit as public;
+        del as public;
+        getOptions as public;
+    }
+
     public function __construct(App $app)
     {
         parent::__construct($app);

@@ -6,9 +6,7 @@ namespace app\common\service;
 
 
 use app\common\basics\Service;
-use app\common\enums\StatusEnum;
 use app\common\model\BankUserModel;
-use app\common\utils\TimeUtils;
 
 class BankUserService extends Service
 {

@@ -6,7 +6,6 @@ namespace app\admin\service;
 
 use app\common\basics\Service;
 use app\common\model\ConfigModel;
-use app\common\model\UserModel;
 use app\common\utils\CacheUtils;
 use app\common\utils\TimeUtils;
 
@@ -23,7 +22,7 @@ class ConfigService extends Service
         $lists = $model
             ->withJoin(['group'],'LEFT')
             ->where($where)
-            ->order('sort desc')
+            ->order('config_model.sort', 'desc')
             ->paginate([
                 'page'      => $get['page']  ?? 1,
                 'list_rows' => $get['pagesize'] ?? 20

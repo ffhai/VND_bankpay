@@ -12,7 +12,6 @@ use app\common\model\AppListModel;
 use app\common\model\BalanceLogModel;
 use app\common\model\BankCardsModel;
 use app\common\model\OrderModel;
-use app\common\model\UserModel;
 use app\openapi\validate\OrderValidate;
 use app\task\service\TaskService;
 use think\facade\Log;

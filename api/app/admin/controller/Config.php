@@ -4,7 +4,6 @@ namespace app\admin\controller;
 
 use app\common\basics\CrudController;
 use app\common\enums\StatusEnum;
-use app\common\exception\NotPermsException;
 use app\common\model\ConfigGroupModel;
 use app\common\model\ConfigModel;
 use app\common\utils\AjaxUtils;

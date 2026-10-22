@@ -6,12 +6,18 @@ use app\channel\service\BankUserService;
 use app\channel\validate\BankUserValidate;
 use app\common\utils\AjaxUtils;
 use think\App;
-use think\response\Json;
 
 
 class BankUser extends CrudController
 {
-    protected function beforeAdd(array $params): array
+    use \app\common\basics\CrudActions {
+        items as public;
+        add as public;
+        edit as public;
+        getOptions as public;
+    }
+
+protected function beforeAdd(array $params): array
     {
         $params['status'] = $params['status'] ?? \app\common\enums\StatusEnum::STATUS_1;
         return $params;

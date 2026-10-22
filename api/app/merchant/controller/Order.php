@@ -10,6 +10,10 @@ use think\facade\Log;
 
 class Order extends CrudController
 {
+    use \app\common\basics\CrudActions {
+        items as public;
+    }
+
     public function __construct(App $app)
     {
         parent::__construct($app);

@@ -58,9 +58,7 @@ class UploadService
             }
         } catch (\Throwable $e) {
             try {
-                if (!$disk->delete($saved)) {
-                    Log::error('上传回滚清理失败: ' . $saved);
-                }
+                $disk->delete($saved);
             } catch (\Throwable $cleanupError) {
                 Log::error('上传回滚清理失败: ' . $saved . ' ' . $cleanupError->getMessage());
             }
