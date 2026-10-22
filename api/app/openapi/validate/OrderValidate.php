@@ -27,6 +27,16 @@ class OrderValidate extends Validate
             'notify_url'   => '异步回调地址',
         ];
         parent::__construct();
+        if (strtolower((string) app('http')->getName()) === 'openapi') {
+            $messages = [];
+            foreach (['order_id', 'pay_type', 'trade_no', 'amount', 'notify_url'] as $field) {
+                $messages[$field . '.require'] = \think\facade\Lang::get($field . '_required');
+            }
+            foreach (['integer', 'egt', 'elt'] as $rule) {
+                $messages['amount.' . $rule] = \think\facade\Lang::get('amount_invalid');
+            }
+            $this->message($messages);
+        }
     }
 
     protected $scene = [

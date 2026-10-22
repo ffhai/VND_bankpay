@@ -34,8 +34,8 @@ class OrderService extends Service
             }
             $orderItem = $order->toArray();
             if (isset($userItem['id'])) {
-                $ownerField = ($userItem['type'] ?? '') === 'channel' ? 'channel_uid' : 'trade_uid';
-                if ((int) $userItem['id'] !== (int) $orderItem[$ownerField]) {
+                // 传入账号时仅允许确认归属于该码商的订单，不依据角色代码判断。
+                if ((int) $userItem['id'] !== (int) $orderItem['channel_uid']) {
                     throw new RequestException('无权限操作当前订单');
                 }
             }
@@ -72,9 +72,7 @@ class OrderService extends Service
             if (!empty($orderItem['notify_url'])) {
                 $appItem = (new AppListModel())->getItemByUid($orderItem['trade_uid']);
                 if ($appItem) {
-                    $params = self::build_order_params($orderItem, $appItem);
-                    $params['sign'] = AppSignService::order_sign($params, $appItem['secret']);
-                    $url = $orderItem['notify_url'] . '?' . http_build_query($params);
+                    $url = self::buildNotifyUrl($orderItem, $appItem);
                     TaskService::addTask(TaskService::KEY_NOTIFY, [
                         'data'=>['order_id'=>$orderId, 'url'=>$url],
                     ]);
@@ -116,10 +114,7 @@ class OrderService extends Service
             return 'api不存在';
         }
 
-        $params = self::build_order_params($orderItem,$appItem);
-        $params['sign'] = AppSignService::order_sign($params,$appItem['secret']);
-
-        $url = $orderItem['notify_url'] .'?'. http_build_query($params);
+        $url = self::buildNotifyUrl($orderItem, $appItem);
         $ret = curl_get($url);
         if(!$ret){
             return '请求失败:'.$url;
@@ -134,6 +129,21 @@ class OrderService extends Service
             return $ret;
         }
     }
+    /**
+     * 合并原回调参数，订单参数覆盖同名项，再按现有协议对全部参数签名。
+     */
+    private static function buildNotifyUrl(array $orderItem, array $appItem): string
+    {
+        $urlParts = explode('#', $orderItem['notify_url'], 2);
+        $fragment = isset($urlParts[1]) ? '#' . $urlParts[1] : '';
+        $queryParts = explode('?', $urlParts[0], 2);
+        parse_str($queryParts[1] ?? '', $query);
+        $params = array_replace($query, self::build_order_params($orderItem, $appItem));
+        unset($params['sign']);
+        $params['sign'] = AppSignService::order_sign($params, $appItem['secret']);
+        return $queryParts[0] . '?' . http_build_query($params) . $fragment;
+    }
+
     /*
      * 组装订单参数 用于对外
      */

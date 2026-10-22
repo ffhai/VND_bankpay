@@ -124,7 +124,7 @@ abstract class AbstractAuth extends BaseController
             return true;
         }
         if (empty($this->userItem['type'])) {
-            throw new NotPermsException('无权限['.$this->requestUrl().']');
+            throw new NotPermsException(lang('无权限[{:url}]', ['url' => $this->requestUrl()]));
         }
         if ((int) $this->userItem['id'] === self::SUPER_ADMIN_ID) {
             return true;
@@ -136,7 +136,7 @@ abstract class AbstractAuth extends BaseController
             return true;
         }
 
-        throw new NotPermsException('无权限['.$this->requestUrl().']');
+        throw new NotPermsException(lang('无权限[{:url}]', ['url' => $this->requestUrl()]));
     }
 
     /**

@@ -44,7 +44,7 @@ const CODE_NOT_AUTH = -10001;
  * 统一处理后端 {code, msg, data} 信封
  * 后端既可能以 HTTP 200 返回业务错误，也会用 401/403/422/500 表达语义，这里统一按 code 判断
  */
-const handleEnvelope = (payload) => {
+const handleEnvelope = (payload, config) => {
   const { code, data, msg } = payload || {};
 
   if (code === CODE_SUCCESS) {
@@ -57,20 +57,22 @@ const handleEnvelope = (payload) => {
     return Promise.reject(new Error(msg || "未登录或登录已过期，请重新登录"));
   }
 
-  ElMessage.error(msg || "请求失败");
+  if (!(config?.silentPermissionError && code === -10002)) {
+    ElMessage.error(msg || "请求失败");
+  }
 
-  return Promise.reject(new Error(msg || "请求失败"));
+  return Promise.reject(Object.assign(new Error(msg || "请求失败"), { code }));
 };
 
 request.interceptors.response.use(
-  (response) => handleEnvelope(response.data),
+  (response) => handleEnvelope(response.data, response.config),
   (error) => {
     const payload = error.response?.data;
 
     // 后端返回了错误信封（401/403/422/500 等）时按信封给出具体原因，
     // 否则（网络中断、网关错误页）才提示网络异常
     if (payload && typeof payload.code !== "undefined") {
-      return handleEnvelope(payload);
+      return handleEnvelope(payload, error.config);
     }
 
     console.error("HTTP Error:", error.response ? error.response.status : "Network Error");

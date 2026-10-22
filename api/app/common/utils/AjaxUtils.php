@@ -24,6 +24,9 @@ class AjaxUtils
 
     private static function result(int $code, string $msg, array $data=[]): array
     {
+        if (strtolower((string) app('http')->getName()) === 'openapi') {
+            $msg = \think\facade\Lang::get($msg);
+        }
         $data = [
             'code' => $code,
             'msg'  => $msg,

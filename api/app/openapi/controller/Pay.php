@@ -12,22 +12,33 @@ use think\facade\View;
 
 class Pay extends BaseController
 {
+    protected function initialize()
+    {
+        $locale = \think\facade\Lang::getLangSet();
+        $messages = [];
+        foreach (['copy_failed', 'copy_unsupported', 'copied', 'copy_success', 'expired', 'payment_success'] as $key) {
+            $messages[$key] = \think\facade\Lang::get($key);
+        }
+        View::assign('locale', $locale);
+        View::assign('i18n_json', json_encode($messages, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
+    }
+
     public function index(){
         $oid = $this->request->param('oid');
         if(empty($oid)){
-            return View::fetch('error',['msg'=>'参数错误']);
+            return View::fetch('error',['msg'=>\think\facade\Lang::get('参数错误')]);
         }
         $orderModel = new OrderModel();
         $orderItem = $orderModel->where('order_id', $oid)->find();
         if (!$orderItem) {
-            return View::fetch('error', ['msg'=>'订单不存在']);
+            return View::fetch('error', ['msg'=>\think\facade\Lang::get('订单不存在')]);
         }
         $orderItem = $orderItem->toArray();
         if ($orderItem['snapshot_source'] === 'missing' || empty($orderItem['bank_bin']) || empty($orderItem['account_name'])) {
-            return View::fetch('error', ['msg'=>'历史收款快照缺失，请联系管理员人工核查']);
+            return View::fetch('error', ['msg'=>\think\facade\Lang::get('历史收款快照缺失，请联系管理员人工核查')]);
         }
         if ((int) $orderItem['status'] !== OrderModel::STATUS_PAYING || (int) $orderItem['expire_time'] <= time()) {
-            return View::fetch('error', ['msg'=>'订单已完成、关闭或过期，不可继续付款']);
+            return View::fetch('error', ['msg'=>\think\facade\Lang::get('订单已完成、关闭或过期，不可继续付款')]);
         }
         $bankInfo = ['bin'=>$orderItem['bank_bin'], 'name'=>$orderItem['bank_name'], 'short_name'=>$orderItem['bank_short_name']];
         $bankUser = ['name'=>$orderItem['account_name']];
@@ -45,11 +56,11 @@ class Pay extends BaseController
             ]);
             if(!$obj){
                 Log::error($obj);
-                return View::fetch('error',['msg'=>'Qr系统异常，请稍后重试！']);
+                return View::fetch('error',['msg'=>\think\facade\Lang::get('Qr系统异常，请稍后重试！')]);
             }
             if($obj['code'] != '00'){
                 Log::error("openapi/pay/index qr失败：".json_encode($obj));
-                return View::fetch('error',['msg'=>'QR异常，请稍后重试！']);
+                return View::fetch('error',['msg'=>\think\facade\Lang::get('QR异常，请稍后重试！')]);
             }
 
             $qrcodeText = $obj['data']['qrCode'];

@@ -20,6 +20,8 @@ class Account extends Auth
         $userinfo['username']=$this->userItem['username'];
         $userinfo['nickname']=$this->userItem['nickname'];
         $userinfo['avatar']=$this->userItem['avatar'];
+        $userinfo['balance'] = (int) $this->userItem['balance'];
+        $userinfo['rate'] = number_format((float) ($this->userItem['rate'] ?? 0), 4, '.', '');
         $userinfo['roles'] = [$this->userItem['type']];
 
         if(empty($userinfo['nickname'])){

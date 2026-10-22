@@ -101,6 +101,22 @@ namespace {
         catch (RequestException $e) { $rejected=true; }
         checkConfirmation($rejected && (int)OrderModel::find($foreign['id'])['status']===1, 'foreign account denied');
 
+        foreach ([['type'=>'custom_provider'], []] as $i=>$identity) {
+            $owned=$makeOrder('chan'.$i, ['trade_uid'=>$uid-1, 'notify_url'=>'']);
+            $confirmed=OrderService::confirmed(['order_id'=>$owned['order_id']], array_merge($identity, ['id'=>$uid]));
+            checkConfirmation($confirmed['result']==='confirmed' && (int)OrderModel::find($owned['id'])['status']===2,
+                'channel ownership permits confirmation with custom or omitted role code');
+        }
+        $merchantOwned=$makeOrder('trade_only', ['channel_uid'=>$uid-1, 'notify_url'=>'']);
+        $rejected=false;
+        try { OrderService::confirmed(['order_id'=>$merchantOwned['order_id']], ['id'=>$uid, 'type'=>'merchant']); }
+        catch (RequestException $e) { $rejected=true; }
+        checkConfirmation($rejected && (int)OrderModel::find($merchantOwned['id'])['status']===1,
+            'merchant ownership alone cannot confirm an order');
+        $adminOrder=$makeOrder('admin_scope', ['trade_uid'=>$uid-1, 'channel_uid'=>$uid-2, 'notify_url'=>'']);
+        checkConfirmation(OrderService::confirmed(['order_id'=>$adminOrder['order_id']], [])['result']==='confirmed',
+            'administrator or system confirmation without user identity remains supported');
+
         $rollback=$makeOrder('rollback');
         TaskService::$fail=true;
         $rejected=false;

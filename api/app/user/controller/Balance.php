@@ -27,15 +27,6 @@ class Balance extends Auth
     }
 
     /**
-     * 当前用户的余额（整数）
-     */
-    public function info()
-    {
-        $balance = BalanceService::getBalance((int) $this->userItem['id']);
-        return AjaxUtils::success('获取成功', ['balance' => $balance]);
-    }
-
-    /**
      * 当前用户的交易记录
      */
     public function items()

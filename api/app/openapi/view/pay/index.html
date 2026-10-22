@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{$locale}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>quầy thanh toán</title>
+    <title>{:lang('checkout')}</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">-->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -32,8 +32,8 @@
 
     <!-- Header / Banner -->
     <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-5 text-white text-center">
-        <h1 class="text-xl font-semibold tracking-wide">Thanh toán an toàn</h1>
-        <p class="text-xs sm:text-sm text-blue-100 mt-1">Vui lòng sử dụng ứng dụng được chỉ định để quét mã QR hoặc thực hiện chuyển khoản nhằm hoàn tất thanh toán.</p>
+        <h1 class="text-xl font-semibold tracking-wide">{:lang('secure_payment')}</h1>
+        <p class="text-xs sm:text-sm text-blue-100 mt-1">{:lang('payment_instruction')}</p>
     </div>
 
     <div class="p-6 sm:p-8 space-y-6">
@@ -43,7 +43,7 @@
             <svg class="w-5 h-5 text-amber-600 animate-pulse flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span>Vui lòng hoàn tất thanh toán trong vòng  <strong id="timer-display" class="text-amber-900 font-bold text-base">0</strong> giây.</span>
+            <span>{:lang('countdown_before')} <strong id="timer-display" class="text-amber-900 font-bold text-base">0</strong> {:lang('countdown_after')}</span>
         </div>
 
         <!-- Main Content Area: Left QR, Right Details -->
@@ -54,7 +54,7 @@
                 <div class="w-36 h-36 sm:w-40 sm:h-40 bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center justify-center">
                     <img src="{$qrcode}" class="w-full h-full text-slate-800">
                 </div>
-                <span class="text-xs text-slate-500 font-medium mt-2.5">Quét mã để chuyển tiền tức thì.</span>
+                <span class="text-xs text-slate-500 font-medium mt-2.5">{:lang('scan_hint')}</span>
             </div>
 
             <!-- Payment Details Fields (Right) -->
@@ -62,40 +62,40 @@
 
                 <!-- Row 1: Bank -->
                 <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
-                    <span class="text-slate-500 font-medium">ngân hàng</span>
+                    <span class="text-slate-500 font-medium">{:lang('bank')}</span>
                     <span id="val-bank" class="text-slate-800 font-semibold">{$bankinfo.short_name}</span>
                 </div>
 
                 <!-- Row 2: Amount (With Copy) -->
                 <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
-                    <span class="text-slate-500 font-medium">Số lượng</span>
+                    <span class="text-slate-500 font-medium">{:lang('amount')}</span>
                     <div class="flex items-center space-x-3">
                         <span id="val-amount" class="text-rose-600 font-bold text-lg sm:text-xl">{:number_format($order.amount)}</span>
-                        <button onclick="copyText('val-amount', this)" class="text-xs sm:text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm">bản sao</button>
+                        <button onclick="copyText('val-amount', this)" class="text-xs sm:text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm">{:lang('copy')}</button>
                     </div>
                 </div>
 
                 <!-- Row 3: Card Number (With Copy) -->
                 <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
-                    <span class="text-slate-500 font-medium">tài khoản</span>
+                    <span class="text-slate-500 font-medium">{:lang('account')}</span>
                     <div class="flex items-center space-x-3">
                         <span id="val-card" class="text-slate-800 font-mono font-medium tracking-wide">{$order.bankcard.bank_number}</span>
-                        <button onclick="copyText('val-card', this)" class="text-xs sm:text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm">bản sao</button>
+                        <button onclick="copyText('val-card', this)" class="text-xs sm:text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm">{:lang('copy')}</button>
                     </div>
                 </div>
 
                 <!-- Row 4: Name -->
                 <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
-                    <span class="text-slate-500 font-medium">Tên</span>
+                    <span class="text-slate-500 font-medium">{:lang('name')}</span>
                     <span id="val-name" class="text-slate-800 font-semibold">{$bankuser.name}</span>
                 </div>
 
                 <!-- Row 5: Note / Reference (With Copy) -->
                 <div class="flex justify-between items-center pb-1">
-                    <span class="text-slate-500 font-medium">Nhận xét</span>
+                    <span class="text-slate-500 font-medium">{:lang('reference')}</span>
                     <div class="flex items-center space-x-3">
                         <span id="val-note" class="text-slate-800 font-mono font-semibold bg-amber-50 px-2 py-0.5 rounded text-amber-800">{$order.ps}</span>
-                        <button onclick="copyText('val-note', this)" class="text-xs sm:text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm">bản sao</button>
+                        <button onclick="copyText('val-note', this)" class="text-xs sm:text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm">{:lang('copy')}</button>
                     </div>
                 </div>
 
@@ -109,7 +109,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                <span>Tôi đã thanh toán</span>
+                <span>{:lang('paid')}</span>
             </button>
         </div>
 
@@ -119,10 +119,10 @@
                 <svg class="w-4 h-4 text-blue-500 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                Một vài lưu ý nhỏ:
+                {:lang('notes')}
             </p>
-            <p>1. Vui lòng đảm bảo bạn chuyển đúng số tiền và ghi rõ nội dung chuyển khoản (ghi chú) được hiển thị trên trang; nếu không, giao dịch chuyển khoản có thể bị chậm trễ hoặc không thành công.</p>
-            <p>2. Sau khi quá trình chuyển khoản hoàn tất, hệ thống sẽ tự động xác minh và xác nhận đơn hàng; vui lòng kiên nhẫn chờ đợi.</p>
+            <p>{:lang('note1')}</p>
+            <p>{:lang('note2')}</p>
         </div>
 
     </div>
@@ -130,10 +130,11 @@
 
 <!-- Toast Notification -->
 <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white px-4 py-2.5 rounded-lg text-sm shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50">
-    Đã sao chép thành công.
+    {:lang('copy_success')}
 </div>
 
 <script>
+    const i18n = {$i18n_json|raw};
     function copyText(elementId, btnElement) {
         const textToCopy = document.getElementById(elementId).innerText.trim();
 
@@ -160,21 +161,21 @@
             if (successful) {
                 showCopySuccess(btnElement);
             } else {
-                showToast("Sao chép thất bại; vui lòng nhấn giữ để sao chép thủ công.");
+                showToast(i18n.copy_failed);
             }
         } catch (err) {
-            showToast("Trình duyệt của bạn không hỗ trợ tính năng tự động sao chép.");
+            showToast(i18n.copy_unsupported);
         }
         document.body.removeChild(textarea);
     }
 
     function showCopySuccess(btnElement) {
         const originalText = btnElement.innerText;
-        btnElement.innerText = "Đã sao chép";
+        btnElement.innerText = i18n.copied;
         btnElement.classList.remove('bg-blue-50', 'text-blue-600', 'hover:bg-blue-100');
         btnElement.classList.add('bg-emerald-50', 'text-emerald-600');
 
-        showToast("Nội dung đã được sao chép vào bộ nhớ tạm.");
+        showToast(i18n.copy_success);
 
         setTimeout(() => {
             btnElement.innerText = originalText;
@@ -210,7 +211,7 @@
                     <svg class="w-5 h-5 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
-                    <span>Lệnh thanh toán đã hết hạn; vui lòng thực hiện lại giao dịch.</span>
+                    <span>${i18n.expired}</span>
                 `;
                 if(paidBtnContainer) paidBtnContainer.style.display = 'none';
             }
@@ -222,7 +223,7 @@
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                     <span class="font-medium text-emerald-900">Thanh toán thành công</span>
+                     <span class="font-medium text-emerald-900">${i18n.payment_success}</span>
                 `;
         if(paidBtnContainer) paidBtnContainer.style.display = 'none';
     }
